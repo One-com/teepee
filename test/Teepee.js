@@ -116,46 +116,69 @@ describe('Teepee', function () {
         }, 'to call the callback without error');
     });
 
-    it('should allow specifying the request body as a Buffer', function () {
-        return expect(function (cb) {
-            new Teepee({ url: 'http://localhost:5984/' }).request({ method: 'POST', path: 'foo', body: new Buffer([1, 2, 3]) }, cb);
-        }, 'with http mocked out', {
-            request: {
-                url: 'POST http://localhost:5984/foo',
-                headers: {
-                    'Content-Type': undefined
+    describe('with the request body specified as a string', function () {
+        it('should not make up a Content-Type', function () {
+            return expect(function (cb) {
+                new Teepee({ url: 'http://localhost:5984/' }).request({ method: 'POST', path: 'foo', body: 'foobar' }, cb);
+            }, 'with http mocked out', {
+                request: {
+                    url: 'POST http://localhost:5984/foo',
+                    headers: {
+                        'Content-Type': undefined
+                    },
+                    body: new Buffer('foobar', 'utf-8')
                 },
-                body: new Buffer([1, 2, 3])
-            },
-            response: 200
-        }, 'to call the callback without error');
+                response: 200
+            }, 'to call the callback without error');
+        });
+
+        it('should set the Content-Length header and not use Transfer-Encoding: chunked', function () {
+            return expect(function (cb) {
+                new Teepee({ url: 'http://localhost:5984/' })
+                    .request({ method: 'POST', body: 'æbc' }, cb);
+            }, 'with http mocked out', {
+                request: {
+                    headers: {
+                        'Transfer-Encoding': undefined,
+                        'Content-Length': 4
+                    },
+                    body: new Buffer('æbc', 'utf-8')
+                },
+                response: 200
+            }, 'to call the callback without error');
+        });
     });
 
-    it('should allow specifying the request body as a string', function () {
-        return expect(function (cb) {
-            new Teepee({ url: 'http://localhost:5984/' }).request({ method: 'POST', path: 'foo', body: 'foobar' }, cb);
-        }, 'with http mocked out', {
-            request: {
-                url: 'POST http://localhost:5984/foo',
-                headers: {
-                    'Content-Type': undefined
+    describe('with no request body', function () {
+        it('should set the Content-Length header and not use Transfer-Encoding: chunked', function () {
+            return expect(function (cb) {
+                new Teepee({ url: 'http://localhost:5984/' })
+                    .request({ method: 'POST' }, cb);
+            }, 'with http mocked out', {
+                request: {
+                    headers: {
+                        'Transfer-Encoding': undefined,
+                        'Content-Length': 0
+                    },
+                    body: new Buffer([])
                 },
-                body: new Buffer('foobar', 'utf-8')
-            },
-            response: 200
-        }, 'to call the callback without error');
+                response: 200
+            }, 'to call the callback without error');
+        });
     });
 
     it('should allow specifying the request body as an object, implying JSON', function () {
         return expect(function (cb) {
-            new Teepee({ url: 'http://localhost:5984/' }).request({ method: 'POST', path: 'foo', body: { what: 'gives' } }, cb);
+            new Teepee({ url: 'http://localhost:5984/' }).request({ method: 'POST', path: 'foo', body: { what: 'gåves' } }, cb);
         }, 'with http mocked out', {
             request: {
                 url: 'POST http://localhost:5984/foo',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Content-Length': 17,
+                    'Transfer-Encoding': undefined
                 },
-                body: { what: 'gives' }
+                body: { what: 'gåves' }
             },
             response: 200
         }, 'to call the callback without error');
@@ -169,6 +192,56 @@ describe('Teepee', function () {
         }, 'with http mocked out', {
             response: 200
         }, 'to call the callback without error');
+    });
+
+    describe('with a request body given as a stream', function () {
+        it('should not set the Content-Length header', function () {
+            return expect(function (cb) {
+                new Teepee({ url: 'http://localhost:5984/' })
+                    .request({ method: 'POST', body: fs.createReadStream(pathModule.resolve(__dirname, '..', 'testdata', '0byte')), path: 'foo' }, cb);
+            }, 'with http mocked out', {
+                request: {
+                    headers: {
+                        'Transfer-Encoding': 'chunked',
+                        'Content-Length': undefined
+                    }
+                },
+                response: 200
+            }, 'to call the callback without error');
+        });
+    });
+
+    describe('with a request body given as a Buffer', function () {
+        it('should set the Content-Length header and not use Transfer-Encoding: chunked', function () {
+            return expect(function (cb) {
+                new Teepee({ url: 'http://localhost:5984/' })
+                    .request({ method: 'POST', body: new Buffer([1, 2]) }, cb);
+            }, 'with http mocked out', {
+                request: {
+                    headers: {
+                        'Transfer-Encoding': undefined,
+                        'Content-Length': 2
+                    },
+                    body: new Buffer([1, 2])
+                },
+                response: 200
+            }, 'to call the callback without error');
+        });
+
+        it('should not make up a Content-Type', function () {
+            return expect(function (cb) {
+                new Teepee({ url: 'http://localhost:5984/' }).request({ method: 'POST', path: 'foo', body: new Buffer([1, 2, 3]) }, cb);
+            }, 'with http mocked out', {
+                request: {
+                    url: 'POST http://localhost:5984/foo',
+                    headers: {
+                        'Content-Type': undefined
+                    },
+                    body: new Buffer([1, 2, 3])
+                },
+                response: 200
+            }, 'to call the callback without error');
+        });
     });
 
     describe('retrying on failure', function () {
@@ -192,13 +265,15 @@ describe('Teepee', function () {
             ], 'to call the callback with error', new socketErrors.ETIMEDOUT());
         });
 
-        it('should not attempt to retry a request with the body given as a stream, despite a `numRetries` setting', function () {
-            return expect(function (cb) {
-                new Teepee({ url: 'http://localhost:5984/' })
-                    .request({ method: 'POST', body: fs.createReadStream(pathModule.resolve(__dirname, '..', 'testdata', '0byte')), path: 'foo', numRetries: 2 }, cb);
-            }, 'with http mocked out', {
-                response: new socketErrors.ETIMEDOUT()
-            }, 'to call the callback with error', new socketErrors.ETIMEDOUT());
+        describe('with a request body given as a stream', function () {
+            it('should not attempt to retry a request, despite a `numRetries` setting', function () {
+                return expect(function (cb) {
+                    new Teepee({ url: 'http://localhost:5984/' })
+                        .request({ method: 'POST', body: fs.createReadStream(pathModule.resolve(__dirname, '..', 'testdata', '0byte')), path: 'foo', numRetries: 2 }, cb);
+                }, 'with http mocked out', {
+                    response: new socketErrors.ETIMEDOUT()
+                }, 'to call the callback with error', new socketErrors.ETIMEDOUT());
+            });
         });
 
         describe('with the retry option', function () {

@@ -1,0 +1,37 @@
+{
+  "name": "teepee",
+  "version": "1.0.0",
+  "description": "Generic HTTP client",
+  "main": "lib/Teepee.js",
+  "author": "Andreas Lind @papandreou <andreas@one.com>",
+  "repository": "git://github.com/One-com/teepee",
+  "scripts": {
+    "lint": "jshint .",
+    "test": "mocha && npm run lint",
+    "travis": "npm test && npm run coverage && <coverage/lcov.info coveralls",
+    "coverage": "NODE_ENV=development istanbul cover _mocha -- --reporter dot && echo google-chrome coverage/lcov-report/index.html"
+  },
+  "dependencies": {
+    "lines": "1.0.1",
+    "httperrors": "0.3.0",
+    "passerror": "0.0.1",
+    "socketerrors": "0.1.1",
+    "underscore": "1.4.0"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "devDependencies": {
+    "coveralls": "2.11.2",
+    "istanbul": "0.3.17",
+    "jshint": "2.7.0",
+    "magicpen-media": "1.5.0",
+    "messy": "6.5.0",
+    "mocha": "2.2.5",
+    "sinon": "1.15.4",
+    "unexpected": "9.2.1",
+    "unexpected-messy": "4.6.0",
+    "unexpected-mitm": "7.4.0",
+    "unexpected-sinon": "6.4.1"
+  }
+}

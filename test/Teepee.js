@@ -116,6 +116,23 @@ describe('Teepee', function () {
         }, 'to call the callback without error');
     });
 
+    it('should default to port 443 on https', function () {
+        return expect(function (cb) {
+            new Teepee({ url: 'https://localhost/' }).request({ path: 'bar/quux' }, cb);
+        }, 'with http mocked out', {
+            request: {
+                url: 'GET https://localhost:443/bar/quux',
+                port: 443,
+                headers: {
+                    // As port 443 is the default for https, it doesn't need to be in the Host header
+                    // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.23
+                    Host: 'localhost'
+                }
+            },
+            response: 200
+        }, 'to call the callback without error');
+    });
+
     describe('with the request body specified as a string', function () {
         it('should not make up a Content-Type', function () {
             return expect(function (cb) {

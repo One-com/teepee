@@ -133,69 +133,46 @@ describe('Teepee', function () {
         }, 'to call the callback without error');
     });
 
-    describe('with the request body specified as a string', function () {
-        it('should not make up a Content-Type', function () {
-            return expect(function (cb) {
-                new Teepee({ url: 'http://localhost:5984/' }).request({ method: 'POST', path: 'foo', body: 'foobar' }, cb);
-            }, 'with http mocked out', {
-                request: {
-                    url: 'POST http://localhost:5984/foo',
-                    headers: {
-                        'Content-Type': undefined
-                    },
-                    body: new Buffer('foobar', 'utf-8')
-                },
-                response: 200
-            }, 'to call the callback without error');
-        });
-
-        it('should set the Content-Length header and not use Transfer-Encoding: chunked', function () {
-            return expect(function (cb) {
-                new Teepee({ url: 'http://localhost:5984/' })
-                    .request({ method: 'POST', body: 'æbc' }, cb);
-            }, 'with http mocked out', {
-                request: {
-                    headers: {
-                        'Transfer-Encoding': undefined,
-                        'Content-Length': 4
-                    },
-                    body: new Buffer('æbc', 'utf-8')
-                },
-                response: 200
-            }, 'to call the callback without error');
-        });
-    });
-
-    describe('with no request body', function () {
-        it('should set the Content-Length header and not use Transfer-Encoding: chunked', function () {
-            return expect(function (cb) {
-                new Teepee({ url: 'http://localhost:5984/' })
-                    .request({ method: 'POST' }, cb);
-            }, 'with http mocked out', {
-                request: {
-                    headers: {
-                        'Transfer-Encoding': undefined,
-                        'Content-Length': 0
-                    },
-                    body: new Buffer([])
-                },
-                response: 200
-            }, 'to call the callback without error');
-        });
-    });
-
-    it('should allow specifying the request body as an object, implying JSON', function () {
+    it('should allow specifying the request body as a Buffer', function () {
         return expect(function (cb) {
-            new Teepee({ url: 'http://localhost:5984/' }).request({ method: 'POST', path: 'foo', body: { what: 'gåves' } }, cb);
+            new Teepee({ url: 'http://localhost:5984/' }).request({ method: 'POST', path: 'foo', body: new Buffer([1, 2, 3]) }, cb);
         }, 'with http mocked out', {
             request: {
                 url: 'POST http://localhost:5984/foo',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Content-Length': 17,
-                    'Transfer-Encoding': undefined
+                    'Content-Type': undefined
                 },
-                body: { what: 'gåves' }
+                body: new Buffer([1, 2, 3])
+            },
+            response: 200
+        }, 'to call the callback without error');
+    });
+
+    it('should allow specifying the request body as a string', function () {
+        return expect(function (cb) {
+            new Teepee({ url: 'http://localhost:5984/' }).request({ method: 'POST', path: 'foo', body: 'foobar' }, cb);
+        }, 'with http mocked out', {
+            request: {
+                url: 'POST http://localhost:5984/foo',
+                headers: {
+                    'Content-Type': undefined
+                },
+                body: new Buffer('foobar', 'utf-8')
+            },
+            response: 200
+        }, 'to call the callback without error');
+    });
+
+    it('should allow specifying the request body as an object, implying JSON', function () {
+        return expect(function (cb) {
+            new Teepee({ url: 'http://localhost:5984/' }).request({ method: 'POST', path: 'foo', body: { what: 'gives' } }, cb);
+        }, 'with http mocked out', {
+            request: {
+                url: 'POST http://localhost:5984/foo',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: { what: 'gives' }
             },
             response: 200
         }, 'to call the callback without error');
@@ -209,56 +186,6 @@ describe('Teepee', function () {
         }, 'with http mocked out', {
             response: 200
         }, 'to call the callback without error');
-    });
-
-    describe('with a request body given as a stream', function () {
-        it('should not set the Content-Length header', function () {
-            return expect(function (cb) {
-                new Teepee({ url: 'http://localhost:5984/' })
-                    .request({ method: 'POST', body: fs.createReadStream(pathModule.resolve(__dirname, '..', 'testdata', '0byte')), path: 'foo' }, cb);
-            }, 'with http mocked out', {
-                request: {
-                    headers: {
-                        'Transfer-Encoding': 'chunked',
-                        'Content-Length': undefined
-                    }
-                },
-                response: 200
-            }, 'to call the callback without error');
-        });
-    });
-
-    describe('with a request body given as a Buffer', function () {
-        it('should set the Content-Length header and not use Transfer-Encoding: chunked', function () {
-            return expect(function (cb) {
-                new Teepee({ url: 'http://localhost:5984/' })
-                    .request({ method: 'POST', body: new Buffer([1, 2]) }, cb);
-            }, 'with http mocked out', {
-                request: {
-                    headers: {
-                        'Transfer-Encoding': undefined,
-                        'Content-Length': 2
-                    },
-                    body: new Buffer([1, 2])
-                },
-                response: 200
-            }, 'to call the callback without error');
-        });
-
-        it('should not make up a Content-Type', function () {
-            return expect(function (cb) {
-                new Teepee({ url: 'http://localhost:5984/' }).request({ method: 'POST', path: 'foo', body: new Buffer([1, 2, 3]) }, cb);
-            }, 'with http mocked out', {
-                request: {
-                    url: 'POST http://localhost:5984/foo',
-                    headers: {
-                        'Content-Type': undefined
-                    },
-                    body: new Buffer([1, 2, 3])
-                },
-                response: 200
-            }, 'to call the callback without error');
-        });
     });
 
     describe('retrying on failure', function () {
@@ -282,15 +209,13 @@ describe('Teepee', function () {
             ], 'to call the callback with error', new socketErrors.ETIMEDOUT());
         });
 
-        describe('with a request body given as a stream', function () {
-            it('should not attempt to retry a request, despite a `numRetries` setting', function () {
-                return expect(function (cb) {
-                    new Teepee({ url: 'http://localhost:5984/' })
-                        .request({ method: 'POST', body: fs.createReadStream(pathModule.resolve(__dirname, '..', 'testdata', '0byte')), path: 'foo', numRetries: 2 }, cb);
-                }, 'with http mocked out', {
-                    response: new socketErrors.ETIMEDOUT()
-                }, 'to call the callback with error', new socketErrors.ETIMEDOUT());
-            });
+        it('should not attempt to retry a request with the body given as a stream, despite a `numRetries` setting', function () {
+            return expect(function (cb) {
+                new Teepee({ url: 'http://localhost:5984/' })
+                    .request({ method: 'POST', body: fs.createReadStream(pathModule.resolve(__dirname, '..', 'testdata', '0byte')), path: 'foo', numRetries: 2 }, cb);
+            }, 'with http mocked out', {
+                response: new socketErrors.ETIMEDOUT()
+            }, 'to call the callback with error', new socketErrors.ETIMEDOUT());
         });
 
         describe('with the retry option', function () {
@@ -704,6 +629,76 @@ describe('Teepee', function () {
                     resolve();
                 });
             }).then(cleanUp);
+        });
+    });
+
+    describe('with the streamRows option', function () {
+        it('should fire a "metadata" event and a "row" event for each row', function () {
+            var rows = [];
+            var metadataSpy = sinon.spy();
+            return expect(function (cb) {
+                new Teepee({ url: 'http://localhost:5984/hey/there' })
+                    .request({ path: '../quux', streamRows: true })
+                    .on('row', function (row) {
+                        rows.push(row);
+                    })
+                    .on('metadata', metadataSpy)
+                    .on('error', cb)
+                    .on('end', cb)
+            }, 'with http mocked out', {
+                response: {
+                    body: '{"total_rows":2,"offset":0,"rows":[\r\n{"id":"uk.co.domain.odd.an@a.weird.email:existingContactId1","key":"uk.co.domain.odd.an@a.weird.email:existingContactId1","value":{"rev":"1-ceb8e8aa27abe5170c3ff1c54491927c"}},\r\n{"id":"uk.co.domain.odd.an@a.weird.email:existingContactId2","key":"uk.co.domain.odd.an@a.weird.email:existingContactId2","value":{"rev":"1-0cf4ca6277701a6f42a21491c76f3a71"}}\r\n]}\n'
+                }
+            }, 'to call the callback without error').then(function () {
+                expect(rows, 'to equal', [
+                    {
+                        id: 'uk.co.domain.odd.an@a.weird.email:existingContactId1',
+                        key: 'uk.co.domain.odd.an@a.weird.email:existingContactId1',
+                        value: {
+                            rev: '1-ceb8e8aa27abe5170c3ff1c54491927c'
+                        }
+                    },
+                    {
+                        id: 'uk.co.domain.odd.an@a.weird.email:existingContactId2',
+                        key: 'uk.co.domain.odd.an@a.weird.email:existingContactId2',
+                        value: {
+                            rev: '1-0cf4ca6277701a6f42a21491c76f3a71'
+                        }
+                    }
+                ]);
+                expect(metadataSpy, 'was called once');
+                expect(metadataSpy, 'was always called with exactly', { total_rows: 2, offset: 0 });
+            });
+        });
+
+        it('should fire an error event once', function () {
+            var erroringStream = new stream.Readable();
+            var rows = [];
+            erroringStream._read = function () {
+                setImmediate(function () {
+                    erroringStream.emit('error', new Error('Fake error'));
+                });
+            };
+
+            return expect(function (cb) {
+                new Teepee({ url: 'http://localhost:5984/hey/there' })
+                    .request({ path: '../quux', streamRows: true })
+                    .on('row', function (row) {
+                        rows.push(row);
+                    })
+                    .on('error', cb)
+                    .on('end', cb)
+            }, 'with http mocked out', {
+                response: {
+                    statusCode: 200,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: erroringStream
+                }
+            }, 'to call the callback with error', new httpErrors.InternalServerError('Fake error')).then(function () {
+                expect(rows, 'to equal', []);
+            });
         });
     });
 });

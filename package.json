@@ -31,7 +31,7 @@
     "sinon": "1.15.4",
     "unexpected": "9.2.1",
     "unexpected-messy": "4.6.0",
-    "unexpected-mitm": "7.4.0",
+    "unexpected-mitm": "7.4.1",
     "unexpected-sinon": "6.4.1"
   }
 }

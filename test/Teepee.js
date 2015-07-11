@@ -629,4 +629,34 @@ describe('Teepee', function () {
             }).then(cleanUp);
         });
     });
+
+    describe.skip('with a username and password in the url', function () {
+        it('should use them as basic auth credentials', function () {
+            return expect(function (cb) {
+                new Teepee('https://foobar:quux@localhost:4232/').request('/blah', cb);
+            }, 'with http mocked out', {
+                request: {
+                    url: 'https://localhost:4232/blah',
+                    headers: {
+                        Authorization: 'Basic Zm9vYmFyOnF1dXg='
+                    }
+                },
+                response: 200
+            }, 'to call the callback without error');
+        });
+
+        it('should support percent-encoded octets, including colons, and a non-encoded colon in the password', function () {
+            return expect(function (cb) {
+                new Teepee('https://fo%25o%C3%A6bar:qu:u%25x%C3%A5@localhost:4232/').request('/blah', cb);
+            }, 'with http mocked out', {
+                request: {
+                    url: 'https://localhost:4232/blah',
+                    headers: {
+                        Authorization: 'Basic Zm9vw6ZiYXI6cXU6dXjDpg=='
+                    }
+                },
+                response: 200
+            }, 'to call the callback without error');
+        });
+    });
 });

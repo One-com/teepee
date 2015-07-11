@@ -86,7 +86,7 @@ describe('Teepee', function () {
 
     it('should perform a simple request', function () {
         return expect(function (cb) {
-            new Teepee({ url: 'http://localhost:5984' }).request({ path: 'bar/quux' }, cb);
+            new Teepee('http://localhost:5984').request({ path: 'bar/quux' }, cb);
         }, 'with http mocked out', {
             request: 'GET http://localhost:5984/bar/quux',
             response: 200
@@ -95,7 +95,7 @@ describe('Teepee', function () {
 
     it('should allow specifying custom headers', function () {
         return expect(function (cb) {
-            new Teepee({ url: 'http://localhost:5984' }).request({ path: 'bar/quux', headers: { Foo: 'bar' } }, cb);
+            new Teepee('http://localhost:5984').request({ path: 'bar/quux', headers: { Foo: 'bar' } }, cb);
         }, 'with http mocked out', {
             request: {
                 url: 'GET http://localhost:5984/bar/quux',
@@ -107,18 +107,16 @@ describe('Teepee', function () {
 
     it('should resolve the path from the base url', function () {
         return expect(function (cb) {
-            new Teepee({ url: 'http://localhost:5984/hey/there' }).request({ path: '../quux' }, cb);
+            new Teepee('http://localhost:5984/hey/there').request({ path: '../quux' }, cb);
         }, 'with http mocked out', {
-            request: {
-                url: 'GET http://localhost:5984/hey/quux'
-            },
+            request: 'GET http://localhost:5984/hey/quux',
             response: 200
         }, 'to call the callback without error');
     });
 
     it('should default to port 443 on https', function () {
         return expect(function (cb) {
-            new Teepee({ url: 'https://localhost/' }).request({ path: 'bar/quux' }, cb);
+            new Teepee('https://localhost/').request({ path: 'bar/quux' }, cb);
         }, 'with http mocked out', {
             request: {
                 url: 'GET https://localhost:443/bar/quux',
@@ -135,7 +133,7 @@ describe('Teepee', function () {
 
     it('should allow specifying the request body as a Buffer', function () {
         return expect(function (cb) {
-            new Teepee({ url: 'http://localhost:5984/' }).request({ method: 'POST', path: 'foo', body: new Buffer([1, 2, 3]) }, cb);
+            new Teepee('http://localhost:5984/').request({ method: 'POST', path: 'foo', body: new Buffer([1, 2, 3]) }, cb);
         }, 'with http mocked out', {
             request: {
                 url: 'POST http://localhost:5984/foo',
@@ -150,7 +148,7 @@ describe('Teepee', function () {
 
     it('should allow specifying the request body as a string', function () {
         return expect(function (cb) {
-            new Teepee({ url: 'http://localhost:5984/' }).request({ method: 'POST', path: 'foo', body: 'foobar' }, cb);
+            new Teepee('http://localhost:5984/').request({ method: 'POST', path: 'foo', body: 'foobar' }, cb);
         }, 'with http mocked out', {
             request: {
                 url: 'POST http://localhost:5984/foo',
@@ -165,7 +163,7 @@ describe('Teepee', function () {
 
     it('should allow specifying the request body as an object, implying JSON', function () {
         return expect(function (cb) {
-            new Teepee({ url: 'http://localhost:5984/' }).request({ method: 'POST', path: 'foo', body: { what: 'gives' } }, cb);
+            new Teepee('http://localhost:5984/').request({ method: 'POST', path: 'foo', body: { what: 'gives' } }, cb);
         }, 'with http mocked out', {
             request: {
                 url: 'POST http://localhost:5984/foo',
@@ -180,7 +178,7 @@ describe('Teepee', function () {
 
     it('should return an object with an abort method', function () {
         return expect(function (cb) {
-            expect(new Teepee({ url: 'http://localhost:5984/' }).request({ method: 'POST', path: 'foo' }, cb), 'to satisfy', {
+            expect(new Teepee('http://localhost:5984/').request({ method: 'POST', path: 'foo' }, cb), 'to satisfy', {
                 abort: expect.it('to be a function')
             });
         }, 'with http mocked out', {
@@ -191,7 +189,7 @@ describe('Teepee', function () {
     describe('retrying on failure', function () {
         it('should return a successful response when a failed GET is retried `numRetries` times', function () {
             return expect(function (cb) {
-                new Teepee({ url: 'http://localhost:5984/' }).request({ path: 'foo', numRetries: 2 }, cb);
+                new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2 }, cb);
             }, 'with http mocked out', [
                 { response: new socketErrors.ETIMEDOUT() },
                 { response: new socketErrors.ETIMEDOUT() },
@@ -201,7 +199,7 @@ describe('Teepee', function () {
 
         it('should give up if the request fails 1 + `numRetries` times', function () {
             return expect(function (cb) {
-                new Teepee({ url: 'http://localhost:5984/' }).request({ path: 'foo', numRetries: 2 }, cb);
+                new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2 }, cb);
             }, 'with http mocked out', [
                 { response: new socketErrors.ETIMEDOUT() },
                 { response: new socketErrors.ETIMEDOUT() },
@@ -211,7 +209,7 @@ describe('Teepee', function () {
 
         it('should not attempt to retry a request with the body given as a stream, despite a `numRetries` setting', function () {
             return expect(function (cb) {
-                new Teepee({ url: 'http://localhost:5984/' })
+                new Teepee('http://localhost:5984/')
                     .request({ method: 'POST', body: fs.createReadStream(pathModule.resolve(__dirname, '..', 'testdata', '0byte')), path: 'foo', numRetries: 2 }, cb);
             }, 'with http mocked out', {
                 response: new socketErrors.ETIMEDOUT()
@@ -222,7 +220,7 @@ describe('Teepee', function () {
             describe('with an array of numbers', function () {
                 it('should retry a non-successful request if the HTTP status code is in the array', function () {
                     return expect(function (cb) {
-                        new Teepee({ url: 'http://localhost:5984/' }).request({ path: 'foo', numRetries: 2, retry: [504] }, cb);
+                        new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2, retry: [504] }, cb);
                     }, 'with http mocked out', [
                         { response: 504 },
                         { response: 504 },
@@ -251,7 +249,7 @@ describe('Teepee', function () {
 
                 it('should not retry a non-successful request if the HTTP status code is not in the array', function () {
                     return expect(function (cb) {
-                        new Teepee({ url: 'http://localhost:5984/' }).request({ path: 'foo', numRetries: 2, retry: [504] }, cb);
+                        new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2, retry: [504] }, cb);
                     }, 'with http mocked out', [
                         { response: 503 }
                     ], 'to call the callback with error', new httpErrors.ServiceUnavailable());
@@ -262,7 +260,7 @@ describe('Teepee', function () {
 
     it('should handle ECONNREFUSED', function () {
         return expect(function (cb) {
-            new Teepee({ url: 'http://localhost:5984/' }).request({ path: 'foo' }, cb);
+            new Teepee('http://localhost:5984/').request({ path: 'foo' }, cb);
         }, 'with http mocked out', {
             response: new socketErrors.ECONNREFUSED('connect ECONNREFUSED')
         }, 'to call the callback with error', new socketErrors.ECONNREFUSED('connect ECONNREFUSED'));
@@ -272,7 +270,7 @@ describe('Teepee', function () {
         var error = new Error('something else');
 
         return expect(function (cb) {
-            new Teepee({ url: 'http://localhost:5984/' }).request({ path: 'foo' }, cb);
+            new Teepee('http://localhost:5984/').request({ path: 'foo' }, cb);
         }, 'with http mocked out', {
             response: error
         }, 'to call the callback with error', new httpErrors[500](error.message));
@@ -287,7 +285,7 @@ describe('Teepee', function () {
             };
 
             return expect(function (cb) {
-                new Teepee({ url: 'http://localhost:5984/' }).request({ method: 'GET', path: 'foo' }, cb);
+                new Teepee('http://localhost:5984/').request({ method: 'GET', path: 'foo' }, cb);
             }, 'with http mocked out', {
                 request: {
                     url: 'GET http://localhost:5984/foo'
@@ -313,7 +311,7 @@ describe('Teepee', function () {
             };
 
             return expect(function (cb) {
-                new Teepee({ url: 'http://localhost:5984/' }).request({ method: 'GET', path: 'foo' }, cb);
+                new Teepee('http://localhost:5984/').request({ method: 'GET', path: 'foo' }, cb);
             }, 'with http mocked out', {
                 request: {
                     url: 'GET http://localhost:5984/foo'
@@ -338,7 +336,7 @@ describe('Teepee', function () {
             };
 
             return expect(function (cb) {
-                new Teepee({ url: 'http://localhost:5984/' }).request({ method: 'GET', path: 'foo' }, cb);
+                new Teepee('http://localhost:5984/').request({ method: 'GET', path: 'foo' }, cb);
             }, 'with http mocked out', {
                 request: {
                     url: 'GET http://localhost:5984/foo'
@@ -357,7 +355,7 @@ describe('Teepee', function () {
     describe('with a query', function () {
         it('should allow specifying the query string as a string', function () {
             return expect(function (cb) {
-                new Teepee({ url: 'http://localhost:5984/' }).request({ path: 'bar/quux', query: 'blabla' }, cb);
+                new Teepee('http://localhost:5984/').request({ path: 'bar/quux', query: 'blabla' }, cb);
             }, 'with http mocked out', {
                 request: 'GET http://localhost:5984/bar/quux?blabla',
                 response: 200
@@ -366,7 +364,7 @@ describe('Teepee', function () {
 
         it('should allow specifying the query string as an object', function () {
             return expect(function (cb) {
-                new Teepee({ url: 'http://localhost:5984/' }).request({ path: 'bar/quux', query: {
+                new Teepee('http://localhost:5984/').request({ path: 'bar/quux', query: {
                     ascii: 'blabla',
                     nønascïî: 'nønascïî',
                     multiple: [ 'foo', 'nønascïî' ],

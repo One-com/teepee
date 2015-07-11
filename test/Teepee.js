@@ -36,7 +36,7 @@ describe('Teepee', function () {
 
             sinon.spy(agent, 'addRequest');
 
-            teepee.request({ path: 'quux' }, cb);
+            teepee.request('quux', cb);
         }, 'with http mocked out', {
             request: 'http://localhost:5984/hey/quux',
             response: 200
@@ -59,7 +59,7 @@ describe('Teepee', function () {
                 Agent: Agent
             });
 
-            teepee.request({ path: 'quux' }, cb);
+            teepee.request('quux', cb);
         }, 'with http mocked out', {
             request: 'http://localhost:5984/hey/quux',
             response: 200
@@ -86,7 +86,7 @@ describe('Teepee', function () {
 
     it('should perform a simple request', function () {
         return expect(function (cb) {
-            new Teepee('http://localhost:5984').request({ path: 'bar/quux' }, cb);
+            new Teepee('http://localhost:5984').request('bar/quux', cb);
         }, 'with http mocked out', {
             request: 'GET http://localhost:5984/bar/quux',
             response: 200
@@ -116,7 +116,7 @@ describe('Teepee', function () {
 
     it('should default to port 443 on https', function () {
         return expect(function (cb) {
-            new Teepee('https://localhost/').request({ path: 'bar/quux' }, cb);
+            new Teepee('https://localhost/').request('bar/quux', cb);
         }, 'with http mocked out', {
             request: {
                 url: 'GET https://localhost:443/bar/quux',
@@ -260,7 +260,7 @@ describe('Teepee', function () {
 
     it('should handle ECONNREFUSED', function () {
         return expect(function (cb) {
-            new Teepee('http://localhost:5984/').request({ path: 'foo' }, cb);
+            new Teepee('http://localhost:5984/').request('foo', cb);
         }, 'with http mocked out', {
             response: new socketErrors.ECONNREFUSED('connect ECONNREFUSED')
         }, 'to call the callback with error', new socketErrors.ECONNREFUSED('connect ECONNREFUSED'));
@@ -270,7 +270,7 @@ describe('Teepee', function () {
         var error = new Error('something else');
 
         return expect(function (cb) {
-            new Teepee('http://localhost:5984/').request({ path: 'foo' }, cb);
+            new Teepee('http://localhost:5984/').request('foo', cb);
         }, 'with http mocked out', {
             response: error
         }, 'to call the callback with error', new httpErrors[500](error.message));
@@ -285,7 +285,7 @@ describe('Teepee', function () {
             };
 
             return expect(function (cb) {
-                new Teepee('http://localhost:5984/').request({ method: 'GET', path: 'foo' }, cb);
+                new Teepee('http://localhost:5984/').request('foo', cb);
             }, 'with http mocked out', {
                 request: {
                     url: 'GET http://localhost:5984/foo'
@@ -311,7 +311,7 @@ describe('Teepee', function () {
             };
 
             return expect(function (cb) {
-                new Teepee('http://localhost:5984/').request({ method: 'GET', path: 'foo' }, cb);
+                new Teepee('http://localhost:5984/').request('foo', cb);
             }, 'with http mocked out', {
                 request: {
                     url: 'GET http://localhost:5984/foo'
@@ -336,7 +336,7 @@ describe('Teepee', function () {
             };
 
             return expect(function (cb) {
-                new Teepee('http://localhost:5984/').request({ method: 'GET', path: 'foo' }, cb);
+                new Teepee('http://localhost:5984/').request('foo', cb);
             }, 'with http mocked out', {
                 request: {
                     url: 'GET http://localhost:5984/foo'
@@ -498,7 +498,7 @@ describe('Teepee', function () {
 
             it('should make connections using the client certificate', function () {
                 return expect(function (cb) {
-                    teepee.request({path: 'foo'}, cb);
+                    teepee.request('foo', cb);
                 }, 'with http mocked out', {
                     request: {
                         encrypted: true,
@@ -532,7 +532,7 @@ describe('Teepee', function () {
 
             it('should make connections using the client certificate', function () {
                 return expect(function (cb) {
-                    teepee.request({path: 'foo'}, cb);
+                    teepee.request('foo', cb);
                 }, 'with http mocked out', {
                     request: {
                         encrypted: true,
@@ -568,7 +568,7 @@ describe('Teepee', function () {
                 return expect.promise(function (run) {
                     var done = run(function () {});
 
-                    teepee.request({path: 'foo'}, done);
+                    teepee.request('foo', done);
                 });
             }
 
@@ -608,7 +608,7 @@ describe('Teepee', function () {
 
             function makeRequest() {
                 return expect.promise(function (run) {
-                    teepee.request({path: 'foo'}).on('error', run(function () {}));
+                    teepee.request('foo').on('error', run(function () {}));
                 });
             }
 

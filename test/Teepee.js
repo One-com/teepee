@@ -631,13 +631,13 @@ describe('Teepee', function () {
         });
     });
 
-    describe.skip('with a username and password in the url', function () {
+    describe('with a username and password in the url', function () {
         it('should use them as basic auth credentials', function () {
             return expect(function (cb) {
-                new Teepee('https://foobar:quux@localhost:4232/').request('/blah', cb);
+                teepee('https://foobar:quux@localhost:4232/', cb);
             }, 'with http mocked out', {
                 request: {
-                    url: 'https://localhost:4232/blah',
+                    url: 'https://localhost:4232/',
                     headers: {
                         Authorization: 'Basic Zm9vYmFyOnF1dXg='
                     }
@@ -648,12 +648,26 @@ describe('Teepee', function () {
 
         it('should support percent-encoded octets, including colons, and a non-encoded colon in the password', function () {
             return expect(function (cb) {
-                new Teepee('https://fo%25o%C3%A6bar:qu:u%25x%C3%A5@localhost:4232/').request('/blah', cb);
+                teepee('http://fo%C3%A6o%25bar:baz%25quux:yadda@localhost:4232/', cb);
             }, 'with http mocked out', {
                 request: {
-                    url: 'https://localhost:4232/blah',
+                    url: 'http://localhost:4232/',
                     headers: {
-                        Authorization: 'Basic Zm9vw6ZiYXI6cXU6dXjDpg=='
+                        Authorization: 'Basic Zm/Dpm8lYmFyOmJheiVxdXV4OnlhZGRh'
+                    }
+                },
+                response: 200
+            }, 'to call the callback without error');
+        });
+
+        it('should leave all percent encoded octets in the username if one of them does not decode as UTF-8', function () {
+            return expect(function (cb) {
+                teepee('http://fo%C3%A6o%25bar%C3:baz%C3%A6quux:yadda@localhost:4232/', cb);
+            }, 'with http mocked out', {
+                request: {
+                    url: 'http://localhost:4232/',
+                    headers: {
+                        Authorization: 'Basic Zm8lQzMlQTZvJTI1YmFyJUMzOmJhesOmcXV1eDp5YWRkYQ=='
                     }
                 },
                 response: 200

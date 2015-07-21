@@ -117,6 +117,15 @@ describe('Teepee', function () {
         }, 'to call the callback without error');
     });
 
+    it('should accept the method before the url', function () {
+        return expect(function (cb) {
+            new Teepee('http://localhost:5984').request('POST bar/quux', cb);
+        }, 'with http mocked out', {
+            request: 'POST http://localhost:5984/bar/quux',
+            response: 200
+        }, 'to call the callback without error');
+    });
+
     it('should allow specifying custom headers', function () {
         return expect(function (cb) {
             new Teepee('http://localhost:5984').request({ path: 'bar/quux', headers: { Foo: 'bar' } }, cb);
@@ -698,12 +707,23 @@ describe('Teepee', function () {
         });
     });
 
-    it('should perform a request directly when invoked without new', function () {
-        return expect(function (cb) {
-            teepee('https://localhost:8000/', cb);
-        }, 'with http mocked out', {
-            request: 'GET http://localhost:8000/',
-            response: 200
-        }, 'to call the callback without error');
+    describe('when invoked without new', function () {
+        it('should perform a request directly when invoked without new', function () {
+            return expect(function (cb) {
+                teepee('https://localhost:8000/', cb);
+            }, 'with http mocked out', {
+                request: 'GET http://localhost:8000/',
+                response: 200
+            }, 'to call the callback without error');
+        });
+
+        it('should accept the method before the url', function () {
+            return expect(function (cb) {
+                teepee('POST https://localhost:8000/', cb);
+            }, 'with http mocked out', {
+                request: 'POST http://localhost:8000/',
+                response: 200
+            }, 'to call the callback without error');
+        });
     });
 });

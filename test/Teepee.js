@@ -1,5 +1,6 @@
 /*global describe, it, __dirname, JSON, clearTimeout, setTimeout, setImmediate*/
 var Teepee = require('../lib/Teepee'),
+    teepee = Teepee, // Alias so that jshint doesn't complain when invoking without new
     httpErrors = require('httperrors'),
     socketErrors = require('socketerrors'),
     unexpected = require('unexpected'),
@@ -658,5 +659,14 @@ describe('Teepee', function () {
                 response: 200
             }, 'to call the callback without error');
         });
+    });
+
+    it('should perform a request directly when invoked without new', function () {
+        return expect(function (cb) {
+            teepee('https://localhost:8000/', cb);
+        }, 'with http mocked out', {
+            request: 'GET http://localhost:8000/',
+            response: 200
+        }, 'to call the callback without error');
     });
 });

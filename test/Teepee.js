@@ -117,6 +117,15 @@ describe('Teepee', function () {
         }, 'to call the callback without error');
     });
 
+    it('should allow the options object to be omitted', function () {
+        return expect(function (cb) {
+            new Teepee('http://localhost:5984').request(cb);
+        }, 'with http mocked out', {
+            request: 'GET http://localhost:5984/',
+            response: 200
+        }, 'to call the callback without error');
+    });
+
     it('should accept the method before the url', function () {
         return expect(function (cb) {
             new Teepee('http://localhost:5984').request('POST bar/quux', cb);

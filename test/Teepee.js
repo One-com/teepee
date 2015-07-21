@@ -23,6 +23,29 @@ describe('Teepee', function () {
         }).request, 'to be a function');
     });
 
+    it('should accept default headers as constructor options', function () {
+        return expect(function (cb) {
+            new Teepee({
+                url: 'http://localhost:1234/',
+                headers: {
+                    foo: 'bar',
+                    quux: 'baz'
+                }
+            }).request({
+                headers: {
+                    foo: 'blah'
+                }
+            }, cb);
+        }, 'with http mocked out', {
+            request: {
+                headers: {
+                    foo: 'blah',
+                    quux: 'baz'
+                }
+            }
+        }, 'to call the callback without error');
+    });
+
     it('should accept a custom agent', function () {
         var agent;
         return expect(function (cb) {

@@ -278,8 +278,8 @@ describe('Teepee', function () {
                 body: 'yaddayaddayadda'
             }
         }, 'to call the callback without error').then(function () {
-            expect(eventEmitter.emit, 'was called with', 'response');
-            expect(eventEmitter.emit, 'was called with', 'responseError');
+            expect(eventEmitter.emit, 'was called with', 'response', expect.it('to be an object'), new Teepee.httpErrors.NotFound());
+            expect(eventEmitter.emit, 'was called with', 'responseError', new Teepee.httpErrors.NotFound());
             expect(eventEmitter.emit, 'was never called with', 'responseSuccess');
         });
     });
@@ -292,7 +292,7 @@ describe('Teepee', function () {
         }, 'with http mocked out', {
             response: 200
         }, 'to call the callback without error').then(function () {
-            expect(eventEmitter.emit, 'was called with', 'response');
+            expect(eventEmitter.emit, 'was called with', 'response', expect.it('to be an object'), undefined);
             expect(eventEmitter.emit, 'was called with', 'responseSuccess');
             expect(eventEmitter.emit, 'was never called with', 'responseError');
         });

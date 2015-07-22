@@ -228,6 +228,38 @@ describe('Teepee', function () {
         }, 'to call the callback without error');
     });
 
+    it('should emit a responseBody event when the response body is available', function () {
+        return expect(function (cb) {
+            teepee('http://localhost/').on('responseBody', function (response) {
+                expect(response.body, 'to equal', new Buffer('yaddayaddayadda'));
+                cb();
+            }).on('error', cb);
+        }, 'with http mocked out', {
+            response: {
+                statusCode: 200,
+                body: 'yaddayaddayadda'
+            }
+        }, 'to call the callback without error');
+    });
+
+    it('should not emit the responseBody event if there are no listeners for it', function () {
+        var eventEmitter;
+        return expect(function (cb) {
+            eventEmitter = teepee('http://localhost/');
+            eventEmitter.on('response', function (response) {
+                response.on('data', function () {}).on('end', cb);
+            });
+            sinon.spy(eventEmitter, 'emit');
+        }, 'with http mocked out', {
+            response: {
+                statusCode: 200,
+                body: 'yaddayaddayadda'
+            }
+        }, 'to call the callback without error').then(function () {
+            expect(eventEmitter.emit, 'was never called with', 'responseBody');
+        });
+    });
+
     describe('retrying on failure', function () {
         it('should return a successful response when a failed GET is retried `numRetries` times', function () {
             return expect(function (cb) {

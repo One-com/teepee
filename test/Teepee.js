@@ -260,6 +260,36 @@ describe('Teepee', function () {
         });
     });
 
+    it('should emit a responseError when an unsuccessful response is received, just in time for a responseBody listener to be attached', function () {
+        return expect(function (cb) {
+            teepee('http://localhost/')
+                .on('responseError', function (responseError, response) {
+                    expect(responseError, 'to equal', new Teepee.httpErrors.NotFound());
+                    this.on('responseBody', function (response) {
+                        expect(response.body, 'to equal', new Buffer('yaddayaddayadda'));
+                        cb();
+                    });
+                });
+        }, 'with http mocked out', {
+            response: {
+                statusCode: 404,
+                body: 'yaddayaddayadda'
+            }
+        }, 'to call the callback without error');
+    });
+
+    it('should not emit a responseError event when a successful response is received', function () {
+        var eventEmitter;
+        return expect(function (cb) {
+            eventEmitter = teepee('http://localhost/', cb);
+            sinon.spy(eventEmitter, 'emit');
+        }, 'with http mocked out', {
+            response: 200
+        }, 'to call the callback without error').then(function () {
+            expect(eventEmitter.emit, 'was never called with', 'responseError');
+        });
+    });
+
     describe('retrying on failure', function () {
         it('should return a successful response when a failed GET is retried `numRetries` times', function () {
             return expect(function (cb) {

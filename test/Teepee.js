@@ -298,6 +298,32 @@ describe('Teepee', function () {
         });
     });
 
+    describe('with a request timeout', function () {
+        describe('passed to the request method', function () {
+            it('should abort the request and emit an error if no response has been received before the timeout', function () {
+                return expect(function (cb) {
+                    new Teepee('http://www.gofish.dk/').request({timeout: 1})
+                        .on('error', function (err) {
+                            expect(err, 'to equal', new socketErrors.ETIMEDOUT());
+                            cb();
+                        });
+                }, 'to call the callback without error');
+            });
+        });
+
+        describe('passed to the constructor method', function () {
+            it('should abort the request and emit an error if no response has been received before the timeout', function () {
+                return expect(function (cb) {
+                    new Teepee({url: 'http://www.gofish.dk/', timeout: 1}).request()
+                        .on('error', function (err) {
+                            expect(err, 'to equal', new socketErrors.ETIMEDOUT());
+                            cb();
+                        });
+                }, 'to call the callback without error');
+            });
+        });
+    });
+
     describe('retrying on failure', function () {
         it('should return a successful response when a failed GET is retried `numRetries` times', function () {
             return expect(function (cb) {

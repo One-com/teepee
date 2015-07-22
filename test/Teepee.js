@@ -260,12 +260,12 @@ describe('Teepee', function () {
         });
     });
 
-    it('should emit a responseError when an unsuccessful response is received, just in time for a responseBody listener to be attached', function () {
+    it('should emit an error when an unsuccessful response is received, just in time for a responseBody listener to be attached', function () {
         var eventEmitter;
         return expect(function (cb) {
             eventEmitter = teepee('http://localhost/');
-            eventEmitter.on('responseError', function (responseError, response) {
-                expect(responseError, 'to equal', new Teepee.httpErrors.NotFound());
+            eventEmitter.on('error', function (err, response) {
+                expect(err, 'to equal', new Teepee.httpErrors.NotFound());
                 this.on('responseBody', function (response) {
                     expect(response.body, 'to equal', new Buffer('yaddayaddayadda'));
                     cb();
@@ -279,12 +279,12 @@ describe('Teepee', function () {
             }
         }, 'to call the callback without error').then(function () {
             expect(eventEmitter.emit, 'was called with', 'response', expect.it('to be an object'), new Teepee.httpErrors.NotFound());
-            expect(eventEmitter.emit, 'was called with', 'responseError', new Teepee.httpErrors.NotFound());
-            expect(eventEmitter.emit, 'was never called with', 'responseSuccess');
+            expect(eventEmitter.emit, 'was called with', 'error', new Teepee.httpErrors.NotFound());
+            expect(eventEmitter.emit, 'was never called with', 'success');
         });
     });
 
-    it('should emit a responseSuccess event (and no responseError event) when a successful response is received', function () {
+    it('should emit a success event (and no error event) when a successful response is received', function () {
         var eventEmitter;
         return expect(function (cb) {
             eventEmitter = teepee('http://localhost/', cb);
@@ -293,8 +293,8 @@ describe('Teepee', function () {
             response: 200
         }, 'to call the callback without error').then(function () {
             expect(eventEmitter.emit, 'was called with', 'response', expect.it('to be an object'), undefined);
-            expect(eventEmitter.emit, 'was called with', 'responseSuccess');
-            expect(eventEmitter.emit, 'was never called with', 'responseError');
+            expect(eventEmitter.emit, 'was called with', 'success');
+            expect(eventEmitter.emit, 'was never called with', 'error');
         });
     });
 

@@ -717,7 +717,7 @@ describe('Teepee', function () {
     });
 
     describe('when invoked without new', function () {
-        it('should perform a request directly when invoked without new', function () {
+        it('should perform a request directly', function () {
             return expect(function (cb) {
                 teepee('https://localhost:8000/', cb);
             }, 'with http mocked out', {

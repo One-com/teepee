@@ -874,4 +874,68 @@ describe('Teepee', function () {
             }, 'to call the callback without error');
         });
     });
+
+    expect.addAssertion('array', 'to result in request', function (expect, subject, value) {
+        return expect(function (cb) {
+            return new Teepee(subject[0]).request(subject[1], cb);
+        }, 'with http mocked out', {
+            request: value,
+            response: 200
+        }, 'to call the callback without error');
+    });
+
+    describe('url resolution', function () {
+        describe('when the base url has a trailing slash', function () {
+            it('should resolve a request url without a leading slash', function () {
+                return expect(['http://localhost/foo/', 'bar'], 'to result in request', 'http://localhost/foo/bar');
+            });
+
+            it('should resolve a request url with a leading slash', function () {
+                return expect(['http://localhost/foo/', '/bar'], 'to result in request', 'http://localhost/bar');
+            });
+        });
+
+        describe('when the base url has no trailing slash', function () {
+            it('should resolve a request url without a leading slash', function () {
+                return expect(['http://localhost/foo', 'bar'], 'to result in request', 'http://localhost/foo/bar');
+            });
+
+            it('should resolve a request url with a leading slash', function () {
+                return expect(['http://localhost/foo', '/bar'], 'to result in request', 'http://localhost/bar');
+            });
+        });
+
+        describe('with a protocol-relative request url', function () {
+            it('should keep the protocol from the base url, but take everything else from the request url', function () {
+                return expect(['https://localhost/foo', '//example.com/baz'], 'to result in request', 'https://example.com/baz');
+            });
+
+            it('should not use basic auth credentials from the base url', function () {
+                return expect(['https://foo@bar:localhost/foo', '//example.com/baz'], 'to result in request', {
+                    headers: {
+                        Authorization: undefined
+                    }
+                });
+            });
+        });
+
+        describe('with an absolute relative request url', function () {
+            it.skip('should ignore the base url', function () {
+                return expect(['https://foo@bar:localhost/foo', 'http://example.com/baz'], 'to result in request', {
+                    url: 'http://example.com/baz',
+                    headers: {
+                        Authorization: undefined
+                    }
+                });
+            });
+        });
+
+        describe('without a base url', function () {
+            it.skip('should not accept a non-absolute request url', function () {
+                return expect(function (cb) {
+                    new Teepee().request('foo', cb);
+                }, 'to call the callback with error', new Error('request url must be absolute'));
+            });
+        });
+    });
 });

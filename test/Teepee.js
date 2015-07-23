@@ -46,6 +46,60 @@ describe('Teepee', function () {
         }, 'to call the callback without error');
     });
 
+    it('should emit a successfulRequest event', function () {
+        var teepee = new Teepee('http://localhost:1234/'),
+            successfulRequestListener = sinon.spy(),
+            failedRequestListener = sinon.spy();
+        teepee.on('successfulRequest', successfulRequestListener);
+        teepee.on('failedRequest', failedRequestListener);
+        return expect(function (cb) {
+            teepee.request(cb);
+        }, 'with http mocked out', {
+            response: 200
+        }, 'to call the callback without error').then(function () {
+            expect(failedRequestListener, 'was not called');
+
+            return expect(successfulRequestListener, 'was called once')
+                .and('was called with', {
+                    url: 'http://localhost:1234/',
+                    requestOptions: {
+                        // ...
+                        host: 'localhost',
+                        port: 1234
+                    },
+                    response: expect.it('to be an object')
+                });
+        });
+    });
+
+    it('should emit a failedRequest event', function () {
+        var teepee = new Teepee('http://localhost:1234/'),
+            successfulRequestListener = sinon.spy(),
+            failedRequestListener = sinon.spy();
+        teepee.on('failedRequest', failedRequestListener);
+        teepee.on('successfulRequest', successfulRequestListener);
+        return expect(function (cb) {
+            teepee.request(cb);
+        }, 'with http mocked out', {
+            response: 404
+        }, 'to call the callback with error', new httpErrors.NotFound()).then(function () {
+            expect(successfulRequestListener, 'was not called');
+
+            return expect(failedRequestListener, 'was called once')
+                .and('was called with', {
+                    numRetriesLeft: 0,
+                    url: 'http://localhost:1234/',
+                    err: new httpErrors.NotFound(),
+                    requestOptions: {
+                        // ...
+                        host: 'localhost',
+                        port: 1234
+                    },
+                    response: expect.it('to be an object')
+                });
+        });
+    });
+
     describe('with a rejectUnauthorized option', function () {
         describe('passed to the constructor', function () {
             // Teepee does pass the option, but it seems like there's a mitm problem that causes this test to fail?

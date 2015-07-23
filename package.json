@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "httperrors": "1.1.0",
-    "passerror": "0.0.1",
+    "passerror": "1.1.0",
     "socketerrors": "0.1.1",
     "underscore": "1.4.0"
   },

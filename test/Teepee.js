@@ -461,7 +461,7 @@ describe('Teepee', function () {
                     [
                         {
                             numRetriesLeft: 0,
-                            err: new httpErrors[501],
+                            err: new httpErrors.NotImplemented(),
                             requestOptions: { host: 'localhost' } // ...
                         }
                     ]

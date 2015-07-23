@@ -192,7 +192,7 @@ describe('Teepee', function () {
 
     it('should resolve the path from the base url', function () {
         return expect(function (cb) {
-            new Teepee('http://localhost:5984/hey/there').request({ path: '../quux' }, cb);
+            new Teepee('http://localhost:5984/hey/there/').request({ path: '../quux' }, cb);
         }, 'with http mocked out', {
             request: 'GET http://localhost:5984/hey/quux',
             response: 200
@@ -891,7 +891,7 @@ describe('Teepee', function () {
             });
 
             it('should resolve a request url with a leading slash', function () {
-                return expect(['http://localhost/foo/', '/bar'], 'to result in request', 'http://localhost/bar');
+                return expect(['http://localhost/foo/', '/bar'], 'to result in request', 'http://localhost/foo/bar');
             });
         });
 
@@ -901,7 +901,7 @@ describe('Teepee', function () {
             });
 
             it('should resolve a request url with a leading slash', function () {
-                return expect(['http://localhost/foo', '/bar'], 'to result in request', 'http://localhost/bar');
+                return expect(['http://localhost/foo', '/bar'], 'to result in request', 'http://localhost/foo/bar');
             });
         });
 
@@ -920,7 +920,7 @@ describe('Teepee', function () {
         });
 
         describe('with an absolute relative request url', function () {
-            it.skip('should ignore the base url', function () {
+            it('should ignore the base url', function () {
                 return expect(['https://foo@bar:localhost/foo', 'http://example.com/baz'], 'to result in request', {
                     url: 'http://example.com/baz',
                     headers: {
@@ -931,11 +931,20 @@ describe('Teepee', function () {
         });
 
         describe('without a base url', function () {
-            it.skip('should not accept a non-absolute request url', function () {
-                return expect(function (cb) {
-                    new Teepee().request('foo', cb);
-                }, 'to call the callback with error', new Error('request url must be absolute'));
+            it('should not accept a non-absolute request url', function () {
+                return expect(function () {
+                    new Teepee().request('foo');
+                }, 'to error', new Error('An absolute request url must be given when no base url is available'));
             });
+        });
+
+        it('#request should accept a url option as an alias for path', function () {
+            return expect(function (cb) {
+                new Teepee('https://localhost:8000/').request({url: 'bar'}, cb);
+            }, 'with http mocked out', {
+                request: 'http://localhost:8000/bar',
+                response: 200
+            }, 'to call the callback without error');
         });
     });
 });

@@ -99,7 +99,7 @@ describe('Teepee', function () {
                 agent: agent
             });
 
-            expect(teepee.agent, 'to be', agent);
+            expect(teepee.agentByProtocol.http, 'to be', agent);
 
             sinon.spy(agent, 'addRequest');
 
@@ -132,8 +132,8 @@ describe('Teepee', function () {
             response: 200
         },
         'to call the callback').then(function () {
-            expect(teepee.agent, 'to be an', Agent);
-            expect(teepee.agent.addRequest, 'was called once');
+            expect(teepee.agentByProtocol.http, 'to be an', Agent);
+            expect(teepee.agentByProtocol.http.addRequest, 'was called once');
         });
     });
 
@@ -952,7 +952,7 @@ describe('Teepee', function () {
         it('should use the same agent instance as the parent', function () {
             var teepee = new Teepee('http://www.foo.com/'),
                 subsidiary = teepee.subsidiary('http://www.example.com/');
-            expect(teepee.getAgent(), 'to be', subsidiary.getAgent());
+            expect(teepee.getAgent('http'), 'to be', subsidiary.getAgent('http'));
         });
 
         it('should accept a string which will override the url', function () {

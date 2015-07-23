@@ -1026,5 +1026,16 @@ describe('Teepee', function () {
                 subsidiary = teepee.subsidiary();
             expect(subsidiary.numRetries, 'to equal', 99);
         });
+
+        describe('with a Teepee subclass', function () {
+            function Wigwam(config) {
+                Teepee.call(this, config);
+            }
+            util.inherits(Wigwam, Teepee);
+
+            it('should produce an instance of the subclass', function () {
+                expect(new Wigwam().subsidiary(), 'to be a', Wigwam);
+            });
+        });
     });
 });

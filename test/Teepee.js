@@ -3,6 +3,7 @@ var Teepee = require('../lib/Teepee'),
     teepee = Teepee, // Alias so that jshint doesn't complain when invoking without new
     httpErrors = require('httperrors'),
     socketErrors = require('socketerrors'),
+    passError = require('passerror'),
     unexpected = require('unexpected'),
     sinon = require('sinon'),
     util = require('util'),
@@ -1135,6 +1136,32 @@ describe('Teepee', function () {
             var teepee = new Teepee({ numRetries: 99 }),
                 subsidiary = teepee.subsidiary();
             expect(subsidiary.numRetries, 'to equal', 99);
+        });
+
+        it('should produce an instance that echoes events to the parent', function () {
+            var teepee = new Teepee('http://localhost:1234/'),
+                subsidiary = teepee.subsidiary('http://localhost:4567/'),
+                subsidiaryRequestListener = sinon.spy(),
+                requestListener = sinon.spy();
+
+            teepee.on('request', requestListener);
+            subsidiary.on('request', subsidiaryRequestListener);
+
+            return expect(function (cb) {
+                subsidiary.request(passError(cb, function () {
+                    teepee.request(cb);
+                }));
+            }, 'with http mocked out', [
+                { response: 200 },
+                { response: 200 }
+            ], 'to call the callback without error').then(function () {
+                expect(subsidiaryRequestListener, 'was called once');
+                expect(requestListener, 'was called twice');
+                expect(requestListener.args, 'to satisfy', [
+                    [ { port: 4567 } ],
+                    [ { port: 1234 } ]
+                ]);
+            });
         });
 
         describe('with a Teepee subclass', function () {

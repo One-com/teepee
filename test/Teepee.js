@@ -72,6 +72,25 @@ describe('Teepee', function () {
         });
     });
 
+    it('should emit a request event', function () {
+        var teepee = new Teepee('http://localhost:1234/'),
+            requestListener = sinon.spy();
+        teepee.on('request', requestListener);
+        return expect(function (cb) {
+            teepee.request({ numRetries: 1 }, cb);
+        }, 'with http mocked out', [
+            { response: new socketErrors.ECONNRESET() },
+            { response: 200 }
+        ], 'to call the callback without error').then(function () {
+            return expect(requestListener, 'was called twice').and('was always called with', {
+                // ...
+                host: 'localhost',
+                port: 1234,
+                method: 'GET'
+            });
+        });
+    });
+
     it('should emit a failedRequest event', function () {
         var teepee = new Teepee('http://localhost:1234/'),
             successfulRequestListener = sinon.spy(),

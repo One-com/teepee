@@ -1,4 +1,4 @@
-/*global describe, it, __dirname, JSON, clearTimeout, setTimeout, setImmediate*/
+/*global describe, it, __dirname, JSON, clearTimeout, setTimeout, setImmediate, beforeEach, afterEach, window, global*/
 var Teepee = require('../lib/Teepee'),
     teepee = Teepee, // Alias so that jshint doesn't complain when invoking without new
     httpErrors = require('httperrors'),
@@ -395,6 +395,41 @@ describe('Teepee', function () {
             }, 'with http mocked out', {
                 response: new socketErrors.ETIMEDOUT()
             }, 'to call the callback with error', new socketErrors.ETIMEDOUT());
+        });
+
+        describe('with the retryDelayMilliseconds option', function () {
+            var setTimeoutSpy;
+            beforeEach(function () {
+                 setTimeoutSpy = sinon.spy(typeof window !== 'undefined' ? window : global, 'setTimeout');
+            });
+            afterEach(function () {
+                setTimeoutSpy.restore();
+            });
+            describe('when passed to the constructor', function () {
+                it('waits that many milliseconds before retrying', function () {
+                    return expect(function (cb) {
+                        new Teepee({ url: 'http://localhost:5984/', retryDelayMilliseconds: 3, numRetries: 1 }).request(cb);
+                    }, 'with http mocked out', [
+                        { response: new socketErrors.ETIMEDOUT() },
+                        { response: 200 }
+                    ], 'to call the callback without error').then(function () {
+                        expect(setTimeoutSpy, 'was called with', expect.it('to be a function'), 3);
+                    });
+                });
+            });
+
+            describe('when passed to the request function', function () {
+                it('waits that many milliseconds before retrying', function () {
+                    return expect(function (cb) {
+                        new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 1, retryDelayMilliseconds: 3 }, cb);
+                    }, 'with http mocked out', [
+                        { response: new socketErrors.ETIMEDOUT() },
+                        { response: 200 }
+                    ], 'to call the callback without error').then(function () {
+                        expect(setTimeoutSpy, 'was called with', expect.it('to be a function'), 3);
+                    });
+                });
+            });
         });
 
         describe('with the retry option', function () {

@@ -947,4 +947,49 @@ describe('Teepee', function () {
             }, 'to call the callback without error');
         });
     });
+
+    describe('#subsidiary()', function () {
+        it('should use the same agent instance as the parent', function () {
+            var teepee = new Teepee('http://www.foo.com/'),
+                subsidiary = teepee.subsidiary('http://www.example.com/');
+            expect(teepee.getAgent(), 'to be', subsidiary.getAgent());
+        });
+
+        it('should accept a string which will override the url', function () {
+            var teepee = new Teepee('http://quux.com:123/'),
+                subsidiary = teepee.subsidiary('http://foo:bar@baz.com:123/');
+            expect(teepee.url, 'to equal', 'http://quux.com:123/');
+            expect(subsidiary.url, 'to equal', 'http://foo:bar@baz.com:123/');
+        });
+
+        it('should accept an options object, which will override the options from the main instance', function () {
+            var teepee = new Teepee({ foo: 123, url: 'http://quux.com:123/' }),
+                subsidiary = teepee.subsidiary({ foo: 456, url: 'http://foo:bar@baz.com:123/' });
+            expect(subsidiary, 'to satisfy', {
+                url: 'http://foo:bar@baz.com:123/',
+                foo: 456
+            });
+        });
+
+        it('should clone the default headers from the parent', function () {
+            var teepee = new Teepee({ headers: { foo: 'bar' }}),
+                subsidiary = teepee.subsidiary();
+            expect(subsidiary.headers, 'to equal', { foo: 'bar' });
+            expect(subsidiary.headers, 'not to be', teepee.headers);
+        });
+
+        it('should merge the headers with those of the parent instance, preferring the ones passed to .subsidiary()', function () {
+            var teepee = new Teepee({ headers: { foo: 'bar', baz: 'quux' }}),
+                subsidiary = teepee.subsidiary({ headers: { foo: 'blah' }});
+            expect(subsidiary.headers, 'to equal', { foo: 'blah', baz: 'quux' });
+            expect(teepee.headers, 'to equal', { foo: 'bar', baz: 'quux' });
+            expect(subsidiary.headers, 'not to be', teepee.headers);
+        });
+
+        it('should inherit numRetries from the parent', function () {
+            var teepee = new Teepee({ numRetries: 99 }),
+                subsidiary = teepee.subsidiary();
+            expect(subsidiary.numRetries, 'to equal', 99);
+        });
+    });
 });

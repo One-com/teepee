@@ -50,8 +50,8 @@ describe('Teepee', function () {
         var teepee = new Teepee('http://localhost:1234/'),
             successfulRequestListener = sinon.spy(),
             failedRequestListener = sinon.spy();
-        teepee.on('successfulRequest', successfulRequestListener);
-        teepee.on('failedRequest', failedRequestListener);
+        teepee.on('successfulRequest', successfulRequestListener)
+            .on('failedRequest', failedRequestListener);
         return expect(function (cb) {
             teepee.request(cb);
         }, 'with http mocked out', {
@@ -430,6 +430,43 @@ describe('Teepee', function () {
                 { response: new socketErrors.ETIMEDOUT() },
                 { response: 200 }
             ], 'to call the callback without error');
+        });
+
+        it('should emit a retriedRequest every time a request is retried', function () {
+            var teepee = new Teepee('http://localhost:1234/'),
+                successfulRequestListener = sinon.spy(),
+                failedRequestListener = sinon.spy(),
+                retriedRequestListener = sinon.spy();
+            teepee
+                .on('failedRequest', failedRequestListener)
+                .on('successfulRequest', successfulRequestListener)
+                .on('retriedRequest', retriedRequestListener);
+            return expect(function (cb) {
+                teepee.request({ path: 'foo', numRetries: 2, retry: [ 501 ] }, cb);
+            }, 'with http mocked out', [
+                { response: new socketErrors.ETIMEDOUT() },
+                { response: 501 },
+                { response: 200 }
+            ], 'to call the callback without error').then(function () {
+                expect(failedRequestListener, 'was not called');
+                expect(successfulRequestListener, 'was called once');
+                expect(retriedRequestListener.args, 'to satisfy', [
+                    [
+                        {
+                            numRetriesLeft: 1,
+                            err: new socketErrors.ETIMEDOUT(),
+                            requestOptions: { host: 'localhost' } // ...
+                        }
+                    ],
+                    [
+                        {
+                            numRetriesLeft: 0,
+                            err: new httpErrors[501],
+                            requestOptions: { host: 'localhost' } // ...
+                        }
+                    ]
+                ]);
+            });
         });
 
         it('should give up if the request fails 1 + `numRetries` times', function () {

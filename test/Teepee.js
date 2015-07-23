@@ -84,10 +84,13 @@ describe('Teepee', function () {
             { response: 200 }
         ], 'to call the callback without error').then(function () {
             return expect(requestListener, 'was called twice').and('was always called with', {
-                // ...
-                host: 'localhost',
-                port: 1234,
-                method: 'GET'
+                url: 'http://localhost:1234/',
+                requestOptions: {
+                    // ...
+                    host: 'localhost',
+                    port: 1234,
+                    method: 'GET'
+                }
             });
         });
     });
@@ -1158,8 +1161,8 @@ describe('Teepee', function () {
                 expect(subsidiaryRequestListener, 'was called once');
                 expect(requestListener, 'was called twice');
                 expect(requestListener.args, 'to satisfy', [
-                    [ { port: 4567 } ],
-                    [ { port: 1234 } ]
+                    [ { requestOptions: { port: 4567 } } ],
+                    [ { requestOptions: { port: 1234 } } ]
                 ]);
             });
         });

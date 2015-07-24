@@ -1054,6 +1054,22 @@ describe('Teepee', function () {
                 response: 200
             }, 'to call the callback without error');
         });
+
+        // Regression test
+        it('should allow specifying a request body', function () {
+            return expect(function (cb) {
+                teepee({ url: 'http://localhost:5984/', method: 'POST', body: { what: 'gives' } }, cb);
+            }, 'with http mocked out', {
+                request: {
+                    url: 'POST http://localhost:5984/',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: { what: 'gives' }
+                },
+                response: 200
+            }, 'to call the callback without error');
+        });
     });
 
     expect.addAssertion('array', 'to result in request', function (expect, subject, value) {

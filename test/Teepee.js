@@ -184,8 +184,7 @@ describe('Teepee', function () {
         }, 'with http mocked out', {
             request: 'http://localhost:5984/hey/quux',
             response: 200
-        },
-        'to call the callback').then(function () {
+        }, 'to call the callback').then(function () {
             expect(agent.addRequest, 'was called once');
         });
     });
@@ -207,8 +206,7 @@ describe('Teepee', function () {
         }, 'with http mocked out', {
             request: 'http://localhost:5984/hey/quux',
             response: 200
-        },
-        'to call the callback').then(function () {
+        }, 'to call the callback').then(function () {
             expect(teepee.agentByProtocol.http, 'to be an', Agent);
             expect(teepee.agentByProtocol.http.addRequest, 'was called once');
         });
@@ -226,6 +224,20 @@ describe('Teepee', function () {
         expect(teepee.getAgent(), 'to be an', http.Agent);
 
         expect(Agent, 'was called with', { foobarquux: 123 });
+    });
+
+    it('should use the global agent if no agent config is provided', function () {
+        var Agent = sinon.spy(http.Agent);
+        var teepee = new Teepee('http://localhost:5984/hey/');
+
+        expect(teepee.getAgent('http'), 'to be undefined');
+    });
+
+    it('should create its own agents if agent:true is provided', function () {
+        var Agent = sinon.spy(http.Agent);
+        var teepee = new Teepee({ agent: true });
+
+        expect(teepee.getAgent('http'), 'to be defined');
     });
 
     it('should perform a simple request', function () {

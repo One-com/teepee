@@ -227,17 +227,11 @@ describe('Teepee', function () {
     });
 
     it('should use the global agent if no agent config is provided', function () {
-        var Agent = sinon.spy(http.Agent);
-        var teepee = new Teepee('http://localhost:5984/hey/');
-
-        expect(teepee.getAgent('http'), 'to be undefined');
+        expect(new Teepee('http://localhost:5984/hey/').getAgent('http'), 'to be undefined');
     });
 
     it('should create its own agents if agent:true is provided', function () {
-        var Agent = sinon.spy(http.Agent);
-        var teepee = new Teepee({ agent: true });
-
-        expect(teepee.getAgent('http'), 'to be defined');
+        expect(new Teepee({ agent: true }).getAgent('http'), 'to be defined');
     });
 
     it('should perform a simple request', function () {

@@ -960,6 +960,38 @@ describe('Teepee', function () {
         });
     });
 
+    describe('with a username and password passed to the constructor', function () {
+        it('should use them as basic auth credentials', function () {
+            return expect(function (cb) {
+                return new Teepee({ username: 'foobar', password: 'quux', url: 'https://localhost:4232/'}).request(cb);
+            }, 'with http mocked out', {
+                request: {
+                    url: 'https://localhost:4232/',
+                    headers: {
+                        Authorization: 'Basic Zm9vYmFyOnF1dXg=' // foobar:quux
+                    }
+                },
+                response: 200
+            }, 'to call the callback without error');
+        });
+    });
+
+    describe('with a username and password passed to the request method', function () {
+        it('should use them as basic auth credentials', function () {
+            return expect(function (cb) {
+                return new Teepee('https://localhost:4232/').request({ username: 'foobar', password: 'quux' }, cb);
+            }, 'with http mocked out', {
+                request: {
+                    url: 'https://localhost:4232/',
+                    headers: {
+                        Authorization: 'Basic Zm9vYmFyOnF1dXg=' // foobar:quux
+                    }
+                },
+                response: 200
+            }, 'to call the callback without error');
+        });
+    });
+
     describe('with a username and password in the url', function () {
         it('should use them as basic auth credentials', function () {
             return expect(function (cb) {

@@ -461,6 +461,14 @@ describe('Teepee', function () {
             ], 'to call the callback without error');
         });
 
+        it('should not retry a request that receives a response if the specific status code is not listed in the retry array', function () {
+            return expect(function (cb) {
+                new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2 }, cb);
+            }, 'with http mocked out', [
+                { response: 503 }
+            ], 'to call the callback with error', new httpErrors.ServiceUnavailable());
+        });
+
         it('should emit a retriedRequest every time a request is retried', function () {
             var teepee = new Teepee('http://localhost:1234/'),
                 successfulRequestListener = sinon.spy(),
@@ -564,7 +572,7 @@ describe('Teepee', function () {
                     ], 'to call the callback without error');
                 });
 
-                it('should not retry a non-successful request if the HTTP status code is in the array, but there is a request event listener', function () {
+                it('should not retry an unsuccessful request if the HTTP status code is in the array, but there is a request event listener', function () {
                     return expect(function (cb) {
                         new Teepee({
                             url: 'http://localhost:5984/',
@@ -583,12 +591,30 @@ describe('Teepee', function () {
                     ], 'to call the callback with error', new httpErrors.GatewayTimeout());
                 });
 
-                it('should not retry a non-successful request if the HTTP status code is not in the array', function () {
+                it('should not retry an unsuccessful request if the HTTP status code is not in the array', function () {
                     return expect(function (cb) {
                         new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2, retry: [504] }, cb);
                     }, 'with http mocked out', [
                         { response: 503 }
                     ], 'to call the callback with error', new httpErrors.ServiceUnavailable());
+                });
+
+                it('should retry an unsuccessful request if "httpError" is in the retry array', function () {
+                    return expect(function (cb) {
+                        new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2, retry: ['httpError'] }, cb);
+                    }, 'with http mocked out', [
+                        { response: 503 },
+                        { response: 200 }
+                    ], 'to call the callback without error');
+                });
+
+                it('should retry an unsuccessful request if retry has a value of "httpError"', function () {
+                    return expect(function (cb) {
+                        new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2, retry: ['httpError'] }, cb);
+                    }, 'with http mocked out', [
+                        { response: 503 },
+                        { response: 200 }
+                    ], 'to call the callback without error');
                 });
             });
         });

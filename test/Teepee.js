@@ -24,6 +24,15 @@ describe('Teepee', function () {
         }).request, 'to be a function');
     });
 
+    it('should assume http:// if no protocol is provided in the base url', function () {
+        return expect(function () {
+            return new Teepee('localhost:1234').request('foobar');
+        }, 'with http mocked out', {
+            request: 'GET http://localhost:1234/foobar',
+            response: 200
+        }, 'not to error');
+    });
+
     it('should accept default headers as constructor options', function () {
         return expect(function (cb) {
             new Teepee({
@@ -1116,6 +1125,15 @@ describe('Teepee', function () {
                 request: 'GET http://localhost:8000/',
                 response: 200
             }, 'to call the callback without error');
+        });
+
+        it('should assume http:// if no protocol is provided', function () {
+            return expect(function () {
+                return teepee('localhost:1234/');
+            }, 'with http mocked out', {
+                request: 'GET http://localhost:1234/',
+                response: 200
+            }, 'not to error');
         });
 
         it('should accept the method before the url', function () {

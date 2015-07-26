@@ -368,8 +368,8 @@ describe('Teepee', function () {
         }, 'to call the callback without error');
     });
 
-    describe('#request should return an eventEmitter when performing a request, which', function () {
-        it('should emit a request event', function () {
+    describe('#request', function () {
+        it('should return an EventEmitter that emits a request event', function () {
             return expect(function (cb) {
                 teepee('http://localhost/').on('request', function (request, requestProperties, url) {
                     expect(request, 'to satisfy', {
@@ -387,7 +387,7 @@ describe('Teepee', function () {
             }, 'to call the callback without error');
         });
 
-        it('should not emit the responseBody event if there are no listeners for it', function () {
+        it('should return an EventEmitter that does not emit the responseBody event unless there are listeners for it', function () {
             var eventEmitter;
             return expect(function (cb) {
                 eventEmitter = teepee('http://localhost/');
@@ -405,7 +405,7 @@ describe('Teepee', function () {
             });
         });
 
-        it('should emit an error when an unsuccessful response is received, just in time for a responseBody listener to be attached', function () {
+        it('should return an EventEmitter that emits an error when an unsuccessful response is received, just in time for a responseBody listener to be attached', function () {
             var eventEmitter;
             return expect(function (cb) {
                 eventEmitter = teepee('http://localhost/');
@@ -429,7 +429,7 @@ describe('Teepee', function () {
             });
         });
 
-        it('should emit a success event (and no error event) when a successful response is received', function () {
+        it('should return an EventEmitter that emits a success event (and no error event) when a successful response is received', function () {
             var eventEmitter;
             return expect(function (cb) {
                 eventEmitter = teepee('http://localhost/', cb);
@@ -440,6 +440,26 @@ describe('Teepee', function () {
                 expect(eventEmitter.emit, 'was called with', 'response', expect.it('to be an object'), undefined);
                 expect(eventEmitter.emit, 'was called with', 'success');
                 expect(eventEmitter.emit, 'was never called with', 'error');
+            });
+        });
+
+        describe('when the return value is used as a thenable', function () {
+            it('should succeed', function () {
+                return expect(function () {
+                    return teepee('http://localhost/');
+                }, 'with http mocked out', {
+                    request: 'GET http://localhost/',
+                    response: 200
+                }, 'not to error');
+            });
+
+            it('should fail', function () {
+                return expect(function () {
+                    return teepee('http://localhost/');
+                }, 'with http mocked out', {
+                    request: 'GET http://localhost/',
+                    response: 404
+                }, 'to error', new httpErrors.NotFound());
             });
         });
     });

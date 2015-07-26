@@ -368,59 +368,79 @@ describe('Teepee', function () {
         }, 'to call the callback without error');
     });
 
-    it('should not emit the responseBody event if there are no listeners for it', function () {
-        var eventEmitter;
-        return expect(function (cb) {
-            eventEmitter = teepee('http://localhost/');
-            eventEmitter.on('response', function (response) {
-                response.on('data', function () {}).on('end', cb);
-            });
-            sinon.spy(eventEmitter, 'emit');
-        }, 'with http mocked out', {
-            response: {
-                statusCode: 200,
-                body: 'yaddayaddayadda'
-            }
-        }, 'to call the callback without error').then(function () {
-            expect(eventEmitter.emit, 'was never called with', 'responseBody');
-        });
-    });
-
-    it('should emit an error when an unsuccessful response is received, just in time for a responseBody listener to be attached', function () {
-        var eventEmitter;
-        return expect(function (cb) {
-            eventEmitter = teepee('http://localhost/');
-            eventEmitter.on('error', function (err, response) {
-                expect(err, 'to equal', new Teepee.httpErrors.NotFound());
-                this.on('responseBody', function (response) {
-                    expect(response.body, 'to equal', new Buffer('yaddayaddayadda'));
-                    cb();
+    describe('#request should return an eventEmitter when performing a request, which', function () {
+        it('should emit a request event', function () {
+            return expect(function (cb) {
+                teepee('http://localhost/').on('request', function (request, requestProperties, url) {
+                    expect(request, 'to satisfy', {
+                        write: expect.it('to be a function')
+                    });
+                    expect(requestProperties, 'to satisfy', {
+                        host: 'localhost'
+                    });
+                    this.on('success', function () {
+                        cb();
+                    }).on('error', cb);
                 });
-            });
-            sinon.spy(eventEmitter, 'emit');
-        }, 'with http mocked out', {
-            response: {
-                statusCode: 404,
-                body: 'yaddayaddayadda'
-            }
-        }, 'to call the callback without error').then(function () {
-            expect(eventEmitter.emit, 'was called with', 'response', expect.it('to be an object'), new Teepee.httpErrors.NotFound());
-            expect(eventEmitter.emit, 'was called with', 'error', new Teepee.httpErrors.NotFound());
-            expect(eventEmitter.emit, 'was never called with', 'success');
+            }, 'with http mocked out', {
+                response: 200
+            }, 'to call the callback without error');
         });
-    });
 
-    it('should emit a success event (and no error event) when a successful response is received', function () {
-        var eventEmitter;
-        return expect(function (cb) {
-            eventEmitter = teepee('http://localhost/', cb);
-            sinon.spy(eventEmitter, 'emit');
-        }, 'with http mocked out', {
-            response: 200
-        }, 'to call the callback without error').then(function () {
-            expect(eventEmitter.emit, 'was called with', 'response', expect.it('to be an object'), undefined);
-            expect(eventEmitter.emit, 'was called with', 'success');
-            expect(eventEmitter.emit, 'was never called with', 'error');
+        it('should not emit the responseBody event if there are no listeners for it', function () {
+            var eventEmitter;
+            return expect(function (cb) {
+                eventEmitter = teepee('http://localhost/');
+                eventEmitter.on('response', function (response) {
+                    response.on('data', function () {}).on('end', cb);
+                });
+                sinon.spy(eventEmitter, 'emit');
+            }, 'with http mocked out', {
+                response: {
+                    statusCode: 200,
+                    body: 'yaddayaddayadda'
+                }
+            }, 'to call the callback without error').then(function () {
+                expect(eventEmitter.emit, 'was never called with', 'responseBody');
+            });
+        });
+
+        it('should emit an error when an unsuccessful response is received, just in time for a responseBody listener to be attached', function () {
+            var eventEmitter;
+            return expect(function (cb) {
+                eventEmitter = teepee('http://localhost/');
+                eventEmitter.on('error', function (err, response) {
+                    expect(err, 'to equal', new Teepee.httpErrors.NotFound());
+                    this.on('responseBody', function (response) {
+                        expect(response.body, 'to equal', new Buffer('yaddayaddayadda'));
+                        cb();
+                    });
+                });
+                sinon.spy(eventEmitter, 'emit');
+            }, 'with http mocked out', {
+                response: {
+                    statusCode: 404,
+                    body: 'yaddayaddayadda'
+                }
+            }, 'to call the callback without error').then(function () {
+                expect(eventEmitter.emit, 'was called with', 'response', expect.it('to be an object'), new Teepee.httpErrors.NotFound());
+                expect(eventEmitter.emit, 'was called with', 'error', new Teepee.httpErrors.NotFound());
+                expect(eventEmitter.emit, 'was never called with', 'success');
+            });
+        });
+
+        it('should emit a success event (and no error event) when a successful response is received', function () {
+            var eventEmitter;
+            return expect(function (cb) {
+                eventEmitter = teepee('http://localhost/', cb);
+                sinon.spy(eventEmitter, 'emit');
+            }, 'with http mocked out', {
+                response: 200
+            }, 'to call the callback without error').then(function () {
+                expect(eventEmitter.emit, 'was called with', 'response', expect.it('to be an object'), undefined);
+                expect(eventEmitter.emit, 'was called with', 'success');
+                expect(eventEmitter.emit, 'was never called with', 'error');
+            });
         });
     });
 

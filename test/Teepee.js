@@ -71,6 +71,23 @@ describe('Teepee', function () {
         });
     });
 
+    it('should decode gzipped responses', function () {
+        return expect(function () {
+            return teepee('http://localhost:1234/').then(function (response) {
+                expect(response.body, 'to equal', new Buffer('foobarquux\n'));
+            });
+        }, 'with http mocked out', {
+            request: 'GET http://localhost:1234/',
+            response: {
+                headers: {
+                    'Content-Encoding': 'gzip'
+                },
+                body: new Buffer([0x1f, 0x8b, 0x08, 0x00, 0xd3, 0x58, 0xb5, 0x55, 0x00, 0x03, 0x4b, 0xcb, 0xcf, 0x4f, 0x4a, 0x2c,
+                                  0x2a, 0x2c, 0x2d, 0xad, 0xe0, 0x02, 0x00, 0xc8, 0x99, 0x6f, 0x44, 0x0b, 0x00, 0x00, 0x00])
+            }
+        }, 'not to error');
+    });
+
     it('should accept default headers as constructor options', function () {
         return expect(function (cb) {
             new Teepee({

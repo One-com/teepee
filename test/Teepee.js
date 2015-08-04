@@ -592,7 +592,7 @@ describe('Teepee', function () {
             }, 'to call the callback without error').spread(function (response, body) {
                 expect(body, 'to equal', new Buffer('FooBar'));
                 expect(requestHandler, 'was called twice');
-            }).finally(function () {
+            })['finally'](function () {
                 server.close();
             });
         });

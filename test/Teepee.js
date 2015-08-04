@@ -480,6 +480,14 @@ describe('Teepee', function () {
                 }, 'to error', new httpErrors.NotFound());
             });
         });
+
+        it('should instantiate an httpErrors.Unknown error if an unmapped status code is returned from the server', function () {
+            return expect(function () {
+                return teepee('http://foo.com/');
+            }, 'with http mocked out', {
+                response: 598
+            }, 'to error', new httpErrors.Unknown({ statusCode: 598 }));
+        });
     });
 
     describe('with a request timeout', function () {

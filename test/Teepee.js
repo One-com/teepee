@@ -69,7 +69,7 @@ describe('Teepee', function () {
         }, 'to call the callback without error').then(function () {
             expect(failedRequestListener, 'was not called');
 
-            return expect(successfulRequestListener, 'was called once')
+            expect(successfulRequestListener, 'was called once')
                 .and('was called with', {
                     url: 'http://localhost:1234/',
                     requestOptions: {
@@ -92,7 +92,7 @@ describe('Teepee', function () {
             { response: new socketErrors.ECONNRESET() },
             { response: 200 }
         ], 'to call the callback without error').then(function () {
-            return expect(requestListener, 'was called twice').and('was always called with', {
+            expect(requestListener, 'was called twice').and('was always called with', {
                 url: 'http://localhost:1234/',
                 requestOptions: {
                     // ...
@@ -117,7 +117,7 @@ describe('Teepee', function () {
         }, 'to call the callback with error', new httpErrors.NotFound()).then(function () {
             expect(successfulRequestListener, 'was not called');
 
-            return expect(failedRequestListener, 'was called once')
+            expect(failedRequestListener, 'was called once')
                 .and('was called with', {
                     numRetriesLeft: 0,
                     url: 'http://localhost:1234/',

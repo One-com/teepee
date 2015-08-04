@@ -704,6 +704,35 @@ describe('Teepee', function () {
                         ], 'to call the callback without error');
                     });
 
+                    it('should emit a retry event with a SelfRedirectError', function () {
+                        var retriedRequestListener = sinon.spy();
+                        return expect(function (cb) {
+                            var teepee = new Teepee('http://localhost:5984/');
+                            teepee.on('retriedRequest', retriedRequestListener);
+                            teepee.request({ numRetries: 1, retry: 'selfRedirect' }, cb);
+                        }, 'with http mocked out', [
+                            { response: { statusCode: 301, headers: { Location: 'http://localhost:5984/#foo' } } },
+                            { response: 200 }
+                        ], 'to call the callback without error').then(function () {
+                            expect(retriedRequestListener, 'was called once')
+                                .and('was always called with', {
+                                    url: 'http://localhost:5984/',
+                                    requestOptions: {
+                                        // ...
+                                        host: 'localhost',
+                                        port: 5984,
+                                        method: 'GET'
+                                    },
+                                    err: {
+                                        name: 'SelfRedirect',
+                                        data: {
+                                            location: 'http://localhost:5984/#foo'
+                                        }
+                                    }
+                                });
+                        });
+                    });
+
                     it('should retry a 302 self-redirect', function () {
                         return expect(function (cb) {
                             new Teepee('http://localhost:5984/').request({ numRetries: 1, retry: 'selfRedirect' }, cb);

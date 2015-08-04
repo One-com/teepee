@@ -452,6 +452,15 @@ describe('Teepee', function () {
             });
         });
 
+        it('should discard a document fragment in the url', function () {
+            return expect(function () {
+                return teepee('http://foo.com/#blah');
+            }, 'with http mocked out', {
+                request: 'http://foo.com/',
+                response: 200
+            }, 'not to error');
+        });
+
         describe('when the return value is used as a thenable', function () {
             it('should succeed', function () {
                 return expect(function () {

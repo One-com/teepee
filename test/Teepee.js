@@ -517,7 +517,7 @@ describe('Teepee', function () {
     });
 
     describe('retrying on failure', function () {
-        it('should return a successful response when a failed GET is retried `numRetries` times', function () {
+        it('should return a successful response when a failed GET is retried `numRetries` times with a successful last attempt', function () {
             return expect(function (cb) {
                 new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2 }, cb);
             }, 'with http mocked out', [
@@ -627,7 +627,7 @@ describe('Teepee', function () {
         });
 
         describe('with the retry option', function () {
-            describe('with an array of numbers', function () {
+            describe('with an array', function () {
                 it('should retry a non-successful request if the HTTP status code is in the array', function () {
                     return expect(function (cb) {
                         new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2, retry: [504] }, cb);
@@ -663,6 +663,17 @@ describe('Teepee', function () {
                     }, 'with http mocked out', [
                         { response: 503 }
                     ], 'to call the callback with error', new httpErrors.ServiceUnavailable());
+                });
+
+                it('should retry a non-successful request if the HTTP status code is covered by a "wildcard"', function () {
+                    return expect(function (cb) {
+                        new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 4, retry: [ '5xx', '40x' ] }, cb);
+                    }, 'with http mocked out', [
+                        { response: 404 },
+                        { response: 504 },
+                        { response: 520 },
+                        { response: 412 }
+                    ], 'to call the callback with error', new httpErrors.PreconditionFailed());
                 });
 
                 it('should retry an unsuccessful request if "httpError" is in the retry array', function () {

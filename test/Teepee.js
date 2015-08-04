@@ -572,6 +572,31 @@ describe('Teepee', function () {
             ], 'to call the callback with error', new httpErrors.ServiceUnavailable());
         });
 
+        it('should retry a request that times out while buffering up the response', function () {
+            var requestHandler = sinon.spy(function (req, res) {
+                    res.writeHead(200, {
+                        'Content-Type': 'text/html; charset=UTF-8'
+                    });
+                    res.write('Foo');
+                    if (requestHandler.callCount > 1) {
+                        res.end('Bar');
+                    }
+                }),
+                server = http.createServer(requestHandler).listen(0),
+                serverAddress = server.address(),
+                serverHostname = serverAddress.address === '::' ? 'localhost' : serverAddress.address,
+                url = 'http://' + serverHostname + ':' + serverAddress.port + '/';
+
+            return expect(function (cb) {
+                teepee({ url: url, numRetries: 1, timeout: 20 }, cb);
+            }, 'to call the callback without error').spread(function (response, body) {
+                expect(body, 'to equal', new Buffer('FooBar'));
+                expect(requestHandler, 'was called twice');
+            }).finally(function () {
+                server.close();
+            });
+        });
+
         it('should emit a retriedRequest every time a request is retried', function () {
             var teepee = new Teepee('http://localhost:1234/'),
                 successfulRequestListener = sinon.spy(),

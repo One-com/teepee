@@ -693,6 +693,60 @@ describe('Teepee', function () {
                         { response: 200 }
                     ], 'to call the callback without error');
                 });
+
+                describe('when retrying on self-redirect is enabled', function () {
+                    it('should retry a 301 self-redirect', function () {
+                        return expect(function (cb) {
+                            new Teepee('http://localhost:5984/').request({ numRetries: 1, retry: 'selfRedirect' }, cb);
+                        }, 'with http mocked out', [
+                            { response: { statusCode: 301, headers: { Location: 'http://localhost:5984/' } } },
+                            { response: 200 }
+                        ], 'to call the callback without error');
+                    });
+
+                    it('should retry a 302 self-redirect', function () {
+                        return expect(function (cb) {
+                            new Teepee('http://localhost:5984/').request({ numRetries: 1, retry: 'selfRedirect' }, cb);
+                        }, 'with http mocked out', [
+                            { response: { statusCode: 302, headers: { Location: 'http://localhost:5984/' } } },
+                            { response: 200 }
+                        ], 'to call the callback without error');
+                    });
+
+                    it('should not retry a 303 self-redirect', function () {
+                        return expect(function (cb) {
+                            new Teepee('http://localhost:5984/').request({ numRetries: 1, retry: 'selfRedirect' }, cb);
+                        }, 'with http mocked out', [
+                            { response: { statusCode: 303, headers: { Location: 'http://localhost:5984/' } } }
+                        ], 'to call the callback without error');
+                    });
+
+                    it('should retry a 301 self-redirect even when the urls differ by document fragment', function () {
+                        return expect(function (cb) {
+                            new Teepee('http://localhost:5984/').request({ numRetries: 1, retry: 'selfRedirect' }, cb);
+                        }, 'with http mocked out', [
+                            { response: { statusCode: 301, headers: { Location: 'http://localhost:5984/' } } },
+                            { response: 200 }
+                        ], 'to call the callback without error');
+                    });
+
+                    it('should retry a 301 self-redirect even when the urls differ by document fragment', function () {
+                        return expect(function (cb) {
+                            new Teepee('http://localhost:5984/#foo').request({ numRetries: 1, retry: 'selfRedirect' }, cb);
+                        }, 'with http mocked out', [
+                            { response: { statusCode: 301, headers: { Location: 'http://localhost:5984/#bar' } } },
+                            { response: 200 }
+                        ], 'to call the callback without error');
+                    });
+
+                    it('should not fail if an invalid url is received in the Location header', function () {
+                        return expect(function (cb) {
+                            new Teepee('http://localhost:5984/').request({ numRetries: 1, retry: 'selfRedirect' }, cb);
+                        }, 'with http mocked out', [
+                            { response: { statusCode: 301, headers: { Location: 'vqwe\x1e' } } }
+                        ], 'to call the callback without error');
+                    });
+                });
             });
         });
     });

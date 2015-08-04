@@ -33,6 +33,30 @@ describe('Teepee', function () {
         }, 'not to error');
     });
 
+    it('should provide the response body as response.body and as the second parameter to the callback', function () {
+        return expect(function (cb) {
+            new Teepee('localhost:1234').request('foobar', cb);
+        }, 'with http mocked out', {
+            request: 'GET http://localhost:1234/foobar',
+            response: { statusCode: 200, body: new Buffer('foo') }
+        }, 'to call the callback without error').spread(function (response, body) {
+            expect(response, 'to have property', 'body', new Buffer('foo'));
+            expect(body, 'to equal', new Buffer('foo'));
+        });
+    });
+
+    it('should provide an empty buffer if the the response body is empty', function () {
+        return expect(function (cb) {
+            new Teepee('localhost:1234').request('foobar', cb);
+        }, 'with http mocked out', {
+            request: 'GET http://localhost:1234/foobar',
+            response: { statusCode: 200 }
+        }, 'to call the callback without error').spread(function (response, body) {
+            expect(response, 'to have property', 'body', new Buffer([]));
+            expect(body, 'to equal', new Buffer([]));
+        });
+    });
+
     it('should accept default headers as constructor options', function () {
         return expect(function (cb) {
             new Teepee({

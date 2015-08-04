@@ -551,6 +551,19 @@ describe('Teepee', function () {
             ], 'to call the callback without error');
         });
 
+        it('should return the response associated with the eventually successful request', function () {
+            return expect(function (cb) {
+                new Teepee('http://localhost:5984/').request({ numRetries: 2, retry: 504 }, cb);
+            }, 'with http mocked out', [
+                { response: { statusCode: 504, headers: { Foo: 'bar' }, body: new Buffer('foo') } },
+                { response: { statusCode: 200, headers: { Foo: 'quux' }, body: new Buffer('quux') } }
+            ], 'to call the callback without error').spread(function (response, body) {
+                expect(response.body, 'to equal', new Buffer('quux'));
+                expect(response.headers.foo, 'to equal', 'quux');
+                expect(body, 'to equal', new Buffer('quux'));
+            });
+        });
+
         it('should not retry a request that receives a response if the specific status code is not listed in the retry array', function () {
             return expect(function (cb) {
                 new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2 }, cb);
@@ -723,9 +736,12 @@ describe('Teepee', function () {
                         return expect(function (cb) {
                             new Teepee('http://localhost:5984/').request({ numRetries: 1, retry: 'selfRedirect' }, cb);
                         }, 'with http mocked out', [
-                            { response: { statusCode: 301, headers: { Location: 'http://localhost:5984/' } } },
-                            { response: 200 }
-                        ], 'to call the callback without error');
+                            { response: { statusCode: 301, headers: { Location: 'http://localhost:5984/' }, body: new Buffer('hey') } },
+                            { response: { statusCode: 200, headers: { Foo: 'quux' }, body: new Buffer('there') } }
+                        ], 'to call the callback without error').spread(function (response, body) {
+                            expect(body, 'to equal', new Buffer('there'));
+                            expect(response, 'to have property', 'body', new Buffer('there'));
+                        });
                     });
 
                     it('should emit a retry event with a SelfRedirectError', function () {

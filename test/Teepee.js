@@ -33,6 +33,20 @@ describe('Teepee', function () {
         }, 'not to error');
     });
 
+    it('should accept a url without a hostname (will default to localhost via http.request)', function () {
+        return expect(function () {
+            return new Teepee('http://:1234').request('foobar');
+        }, 'with http mocked out', {
+            request: {
+                url: 'GET http://localhost:1234/foobar',
+                headers: {
+                    Host: ':1234'
+                }
+            },
+            response: 200
+        }, 'not to error');
+    });
+
     it('should provide the response body as response.body and as the second parameter to the callback', function () {
         return expect(function (cb) {
             new Teepee('localhost:1234').request('foobar', cb);

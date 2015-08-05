@@ -1382,7 +1382,7 @@ describe('Teepee', function () {
             });
         });
 
-        describe('with an absolute relative request url', function () {
+        describe('with an absolute request url', function () {
             it('should ignore the base url', function () {
                 return expect(['https://foo@bar:localhost/foo', 'http://example.com/baz'], 'to result in request', {
                     url: 'http://example.com/baz',

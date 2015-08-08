@@ -27,12 +27,12 @@
     "istanbul": "0.3.17",
     "jshint": "2.7.0",
     "magicpen-media": "1.5.0",
-    "messy": "6.5.0",
+    "messy": "6.6.1",
     "mocha": "2.2.5",
     "sinon": "1.15.4",
-    "unexpected": "9.4.0",
-    "unexpected-messy": "4.6.0",
-    "unexpected-mitm": "7.5.1",
+    "unexpected": "9.5.0",
+    "unexpected-messy": "4.8.0",
+    "unexpected-mitm": "7.7.0",
     "unexpected-sinon": "6.4.2"
   }
 }

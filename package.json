@@ -4,6 +4,7 @@
   "description": "Generic HTTP client",
   "main": "lib/Teepee.js",
   "author": "Andreas Lind @papandreou <andreas@one.com>",
+  "license": "BSD-3-Clause",
   "repository": "git://github.com/One-com/teepee",
   "scripts": {
     "lint": "jshint .",

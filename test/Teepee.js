@@ -1154,10 +1154,10 @@ describe('Teepee', function () {
                 res.end();
             });
             var timeoutLimit = this.timeout() - 200;
-            server.listen(59891);
+            server.listen();
 
             var teepee = new Teepee({
-                url: 'http://localhost:59891/',
+                url: 'http://localhost:' + server.address().port + '/',
                 maxSockets: 1
             });
 
@@ -1196,10 +1196,10 @@ describe('Teepee', function () {
                 res.end();
             });
             var timeoutLimit = this.timeout() - 200;
-            server.listen(59891);
+            server.listen();
 
             var teepee = new Teepee({
-                url: 'http://localhost:59891/',
+                url: 'http://localhost:' + server.address().port + '/',
                 maxSockets: 1
             });
 

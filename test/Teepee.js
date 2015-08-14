@@ -1,6 +1,7 @@
 /*global describe, it, __dirname, JSON, clearTimeout, setTimeout, setImmediate, beforeEach, afterEach, window, global*/
 var Teepee = require('../lib/Teepee'),
     teepee = Teepee, // Alias so that jshint doesn't complain when invoking without new
+    zlib = require('zlib'),
     httpErrors = require('httperrors'),
     socketErrors = require('socketerrors'),
     passError = require('passerror'),
@@ -1158,6 +1159,7 @@ describe('Teepee', function () {
 
             var teepee = new Teepee({
                 url: 'http://localhost:' + server.address().port + '/',
+                agent: true,
                 maxSockets: 1
             });
 
@@ -1190,6 +1192,88 @@ describe('Teepee', function () {
             }).then(cleanUp);
         });
 
+        it('should not exhaust the pool on HTTP 304 and a response handler is attached', function () {
+            var server = require('http').createServer(function (req, res) {
+                res.statusCode = 304;
+                res.end();
+            });
+            var timeoutLimit = this.timeout() - 200;
+            server.listen();
+
+            var teepee = new Teepee({
+                url: 'http://localhost:' + server.address().port + '/',
+                agent: true,
+                maxSockets: 1
+            });
+
+            function cleanUp() {
+                server.close();
+            }
+
+            function makeRequest() {
+                return expect.promise(function (run) {
+                    var done = run(function () {});
+
+                    teepee.request('foo').on('response', function (response) {
+                        done();
+                    });
+                });
+            }
+
+            return expect.promise(function (resolve, reject) {
+                var timeout = setTimeout(function () {
+                    reject(new Error('connection pool exhausted'));
+                }, timeoutLimit);
+
+                // make more parallel teepee requests than we set maxSockets
+                expect.promise.settle([
+                    makeRequest(),
+                    makeRequest()
+                ]).then(function () {
+                    clearTimeout(timeout);
+                    resolve();
+                });
+            }).then(cleanUp);
+        });
+
+        it('should not resume a 304 response if it is piped', function () {
+            var resumeSpy;
+            return expect(function (cb) {
+                teepee('http://example.com/').on('response', function (response) {
+                    resumeSpy = sinon.spy(response, 'resume');
+                    response.pipe(new zlib.Gzip());
+                    setImmediate(cb);
+                });
+            }, 'with http mocked out', {
+                request: 'GET /',
+                response: {
+                    statusCode: 304,
+                    body: new Buffer([0, 1, 2])
+                }
+            }, 'to call the callback without error').then(function () {
+                expect(resumeSpy, 'was not called');
+            });
+        });
+
+        it('should not resume a 304 response if a data listener is attached', function () {
+            var resumeSpy;
+            return expect(function (cb) {
+                teepee('http://example.com/').on('response', function (response) {
+                    resumeSpy = sinon.spy(response, 'resume');
+                    response.on('data', function () {});
+                    setImmediate(cb);
+                });
+            }, 'with http mocked out', {
+                request: 'GET /',
+                response: {
+                    statusCode: 304,
+                    body: new Buffer([0, 1, 2])
+                }
+            }, 'to call the callback without error').then(function () {
+                expect(resumeSpy, 'was not called');
+            });
+        });
+
         it('should not exhaust the pool on HTTP error status when the EventEmitter-based interface is used', function () {
             var server = require('http').createServer(function (req, res) {
                 res.statusCode = 404;
@@ -1200,6 +1284,7 @@ describe('Teepee', function () {
 
             var teepee = new Teepee({
                 url: 'http://localhost:' + server.address().port + '/',
+                agent: true,
                 maxSockets: 1
             });
 

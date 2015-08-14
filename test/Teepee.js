@@ -1240,27 +1240,8 @@ describe('Teepee', function () {
             var resumeSpy;
             return expect(function (cb) {
                 teepee('http://example.com/').on('response', function (response) {
-                    resumeSpy = sinon.spy(response, 'resume');
                     response.pipe(new zlib.Gzip());
-                    setImmediate(cb);
-                });
-            }, 'with http mocked out', {
-                request: 'GET /',
-                response: {
-                    statusCode: 304,
-                    body: new Buffer([0, 1, 2])
-                }
-            }, 'to call the callback without error').then(function () {
-                expect(resumeSpy, 'was not called');
-            });
-        });
-
-        it('should not resume a 304 response if a data listener is attached', function () {
-            var resumeSpy;
-            return expect(function (cb) {
-                teepee('http://example.com/').on('response', function (response) {
                     resumeSpy = sinon.spy(response, 'resume');
-                    response.on('data', function () {});
                     setImmediate(cb);
                 });
             }, 'with http mocked out', {

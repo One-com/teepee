@@ -10,6 +10,7 @@ var Teepee = require('../lib/Teepee'),
     util = require('util'),
     fs = require('fs'),
     http = require('http'),
+    https = require('https'),
     stream = require('stream'),
     pathModule = require('path');
 
@@ -257,6 +258,46 @@ describe('Teepee', function () {
         }, 'to call the callback').then(function () {
             expect(teepee.agentByProtocol.http, 'to be an', Agent);
             expect(teepee.agentByProtocol.http.addRequest, 'was called once');
+        });
+    });
+
+    it('should accept a custom AgentByProtocol object', function () {
+        var CustomHttpAgent = function (options) {
+            http.Agent.call(this, options);
+            sinon.spy(this, 'addRequest');
+        };
+        util.inherits(CustomHttpAgent, http.Agent);
+
+        var CustomHttpsAgent = function (options) {
+            https.Agent.call(this, options);
+            sinon.spy(this, 'addRequest');
+        };
+        util.inherits(CustomHttpsAgent, http.Agent);
+
+        var teepee;
+        return expect(function () {
+            teepee = new Teepee({
+                url: 'http://localhost:5984/hey/',
+                AgentByProtocol: { http: CustomHttpAgent, https: CustomHttpsAgent }
+            });
+
+            return teepee.request('quux').then(function () {
+                return teepee.request('https://example.com/');
+            });
+        }, 'with http mocked out', [
+            {
+                request: 'http://localhost:5984/hey/quux',
+                response: 200
+            },
+            {
+                request: 'https://example.com/',
+                response: 200
+            }
+        ], 'not to error').then(function () {
+            expect(teepee.agentByProtocol.http, 'to be a', CustomHttpAgent);
+            expect(teepee.agentByProtocol.http.addRequest, 'was called once');
+            expect(teepee.agentByProtocol.https, 'to be a', CustomHttpsAgent);
+            expect(teepee.agentByProtocol.https.addRequest, 'was called once');
         });
     });
 

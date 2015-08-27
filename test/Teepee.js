@@ -272,7 +272,7 @@ describe('Teepee', function () {
             https.Agent.call(this, options);
             sinon.spy(this, 'addRequest');
         };
-        util.inherits(CustomHttpsAgent, http.Agent);
+        util.inherits(CustomHttpsAgent, https.Agent);
 
         var teepee;
         return expect(function () {

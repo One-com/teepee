@@ -24,13 +24,13 @@
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
-    "coveralls": "2.11.2",
-    "istanbul": "0.3.17",
-    "jshint": "2.7.0",
-    "mocha": "2.2.5",
-    "sinon": "1.15.4",
-    "unexpected": "9.5.0",
+    "coveralls": "2.11.4",
+    "istanbul": "0.3.19",
+    "jshint": "2.8.0",
+    "mocha": "2.3.0",
+    "sinon": "1.16.1",
+    "unexpected": "9.8.1",
     "unexpected-mitm": "7.7.0",
-    "unexpected-sinon": "6.4.2"
+    "unexpected-sinon": "7.1.0"
   }
 }

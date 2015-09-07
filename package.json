@@ -1,6 +1,6 @@
 {
   "name": "teepee",
-  "version": "2.15.4",
+  "version": "2.15.5",
   "description": "Generic HTTP client",
   "main": "lib/Teepee.js",
   "author": "Andreas Lind @papandreou <andreas@one.com>",

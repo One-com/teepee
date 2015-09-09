@@ -1613,4 +1613,28 @@ describe('Teepee', function () {
             });
         });
     });
+
+    describe('with preprocessRequestOptions', function () {
+        it('should allow overriding the protocol, host, port, path, and headers', function () {
+            var teepee = new Teepee('http://example.com/foo', {headers: {Foo: 'bar'}});
+            teepee.preprocessRequestOptions = function (requestOptions, options, cb) {
+                requestOptions.protocol = 'https';
+                requestOptions.port = 1234;
+                requestOptions.host = 'someotherexample.com';
+                requestOptions.path = '/alternativePath';
+                setImmediate(cb);
+            };
+            return expect(function (cb) {
+                teepee.request(cb);
+            }, 'with http mocked out', {
+                request: {
+                    url: 'https://someotherexample.com:1234/alternativePath',
+                    headers: {
+                        Host: 'example.com' // This might be a bit unintutive
+                    }
+                },
+                response: 200
+            }, 'to call the callback without error');
+        });
+    });
 });

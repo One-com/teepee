@@ -541,6 +541,76 @@ describe('Teepee', function () {
             }, 'not to error');
         });
 
+        describe('when the body is passed as a function', function () {
+            it('should support a Buffer being returned', function () {
+                return expect(function () {
+                    return teepee({
+                        url: 'PUT http://localhost/',
+                        body: function () {
+                            return new Buffer('hello');
+                        }
+                    });
+                }, 'with http mocked out', {
+                    request: {
+                        url: 'PUT http://localhost/',
+                        body: new Buffer('hello')
+                    }
+                }, 'not to error');
+            });
+
+            describe('when a stream is returned', function () {
+                it('should send a single request', function () {
+                    return expect(function () {
+                        return teepee({
+                            url: 'PUT http://localhost/',
+                            headers: {
+                                'Content-Type': 'text/plain; charset=UTF-8'
+                            },
+                            body: function () {
+                                return fs.createReadStream(pathModule.resolve(__dirname, '..', 'LICENSE'));
+                            }
+                        });
+                    }, 'with http mocked out', {
+                        request: {
+                            url: 'PUT http://localhost/',
+                            body: /^Copyright/
+                        }
+                    }, 'not to error');
+                });
+
+                it('should support retrying', function () {
+                    return expect(function () {
+                        return teepee({
+                            url: 'PUT http://localhost/',
+                            headers: {
+                                'Content-Type': 'text/plain; charset=UTF-8'
+                            },
+                            numRetries: 1,
+                            retry: '504',
+                            body: function () {
+                                return fs.createReadStream(pathModule.resolve(__dirname, '..', 'LICENSE'));
+                            }
+                        });
+                    }, 'with http mocked out', [
+                        {
+                            request: {
+                                url: 'PUT http://localhost/',
+                                body: /^Copyright/
+                            },
+                            response: 504
+                        },
+                        {
+                            request: {
+                                url: 'PUT http://localhost/',
+                                body: /^Copyright/
+                            },
+                            response: 200
+                        }
+                    ], 'not to error');
+                });
+            });
+        });
+
         describe('when the return value is used as a thenable', function () {
             it('should succeed', function () {
                 return expect(function () {

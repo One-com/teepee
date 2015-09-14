@@ -1041,6 +1041,19 @@ describe('Teepee', function () {
             });
         });
 
+        it('should not attempt to parse an application/json response body when the request method is HEAD', function () {
+            return expect(function (cb) {
+                return teepee('HEAD http://localhost:5984/');
+            }, 'with http mocked out', {
+                response: {
+                    statusCode: 200,
+                    headers: {
+                        'Content-Type': 'application/json; charset=utf8'
+                    }
+                }
+            }, 'not to error');
+        });
+
         it('should throw an error on invalid JSON', function () {
             var responseStream = new stream.Readable();
             responseStream._read = function () {

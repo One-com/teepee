@@ -96,7 +96,7 @@ describe('Teepee', function () {
         }, 'to call the callback without error');
     });
 
-    it('should emit a successfulRequest event', function () {
+    it('should emit a successfulRequest event on 200 OK response', function () {
         var teepee = new Teepee('http://localhost:1234/'),
             successfulRequestListener = sinon.spy(),
             failedRequestListener = sinon.spy();
@@ -120,6 +120,20 @@ describe('Teepee', function () {
                     response: expect.it('to be an object')
                 });
         });
+    });
+
+    it('should emit a successfulRequest event on 304 Not Modified response', function () {
+        return expect(function (cb) {
+            var teepee = new Teepee('http://localhost:1234/');
+            var successfulRequestListener = sinon.spy(function () {
+                cb();
+            });
+            teepee.on('successfulRequest', successfulRequestListener);
+            teepee.request('/foo.jpg');
+        }, 'with http mocked out', {
+            response: 304,
+            body: 'barbar'
+        }, 'to call the callback without error');
     });
 
     it('should emit a request event', function () {

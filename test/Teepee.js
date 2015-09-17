@@ -136,6 +136,40 @@ describe('Teepee', function () {
         }, 'to call the callback without error');
     });
 
+    it('should emit a successfulRequest event on 200 Ok response without callback but with responseBody event handler', function () {
+        return expect(function (cb) {
+            var teepee = new Teepee('http://localhost:1234/');
+            var successfulRequestListener = sinon.spy(function () {
+                cb();
+            });
+            teepee.on('successfulRequest', successfulRequestListener);
+
+            var request = teepee.request('/foo.jpg');
+
+            request.once('responseBody', function () {
+
+            });
+        }, 'with http mocked out', {
+            response: 200,
+            body: 'barbar'
+        }, 'to call the callback without error');
+    });
+
+    it('should emit a successfulRequest event on 200 Ok response without callback and without responseBody event handler', function () {
+        return expect(function (cb) {
+            var teepee = new Teepee('http://localhost:1234/');
+            var successfulRequestListener = sinon.spy(function () {
+                cb();
+            });
+            teepee.on('successfulRequest', successfulRequestListener);
+
+            teepee.request('/foo.jpg');
+        }, 'with http mocked out', {
+            response: 200,
+            body: 'barbar'
+        }, 'to call the callback without error');
+    });
+
     it('should emit a request event', function () {
         var teepee = new Teepee('http://localhost:1234/'),
             requestListener = sinon.spy();

@@ -98,8 +98,8 @@ describe('Teepee', function () {
 
     it('should emit a successfulRequest event on 200 OK response', function () {
         var teepee = new Teepee('http://localhost:1234/'),
-            successfulRequestListener = sinon.spy(),
-            failedRequestListener = sinon.spy();
+            successfulRequestListener = sinon.spy().named('successfulRequestListener'),
+            failedRequestListener = sinon.spy().named('failedRequestListener');
         teepee.on('successfulRequest', successfulRequestListener)
             .on('failedRequest', failedRequestListener);
         return expect(function (cb) {
@@ -107,18 +107,22 @@ describe('Teepee', function () {
         }, 'with http mocked out', {
             response: 200
         }, 'to call the callback without error').then(function () {
-            expect(failedRequestListener, 'was not called');
-
-            expect(successfulRequestListener, 'was called once')
-                .and('was called with', {
-                    url: 'http://localhost:1234/',
-                    requestOptions: {
-                        // ...
-                        host: 'localhost',
-                        port: 1234
-                    },
-                    response: expect.it('to be an object')
-                });
+            expect([ failedRequestListener, successfulRequestListener ], 'to have calls satisfying', [
+                {
+                    spy: successfulRequestListener,
+                    args: [
+                        {
+                            url: 'http://localhost:1234/',
+                            requestOptions: {
+                                // ...
+                                host: 'localhost',
+                                port: 1234
+                            },
+                            response: expect.it('to be an object')
+                        }
+                    ]
+                }
+            ]);
         });
     });
 
@@ -127,7 +131,7 @@ describe('Teepee', function () {
             var teepee = new Teepee('http://localhost:1234/');
             var successfulRequestListener = sinon.spy(function () {
                 cb();
-            });
+            }).named('successfulRequestListener');
             teepee.on('successfulRequest', successfulRequestListener);
             teepee.request('/foo.jpg');
         }, 'with http mocked out', {
@@ -146,9 +150,7 @@ describe('Teepee', function () {
 
             var request = teepee.request('/foo.jpg');
 
-            request.once('responseBody', function () {
-
-            });
+            request.once('responseBody', function () {});
         }, 'with http mocked out', {
             response: 200,
             body: 'barbar'
@@ -172,7 +174,7 @@ describe('Teepee', function () {
 
     it('should emit a request event', function () {
         var teepee = new Teepee('http://localhost:1234/'),
-            requestListener = sinon.spy();
+            requestListener = sinon.spy().named('requestListener');
         teepee.on('request', requestListener);
         return expect(function (cb) {
             teepee.request({ numRetries: 1 }, cb);
@@ -194,8 +196,8 @@ describe('Teepee', function () {
 
     it('should emit a failedRequest event', function () {
         var teepee = new Teepee('http://localhost:1234/'),
-            successfulRequestListener = sinon.spy(),
-            failedRequestListener = sinon.spy();
+            successfulRequestListener = sinon.spy().named('successfulRequestListner'),
+            failedRequestListener = sinon.spy().named('failedRequestListener');
         teepee.on('failedRequest', failedRequestListener);
         teepee.on('successfulRequest', successfulRequestListener);
         return expect(function (cb) {
@@ -203,20 +205,24 @@ describe('Teepee', function () {
         }, 'with http mocked out', {
             response: 404
         }, 'to call the callback with error', new httpErrors.NotFound()).then(function () {
-            expect(successfulRequestListener, 'was not called');
-
-            expect(failedRequestListener, 'was called once')
-                .and('was called with', {
-                    numRetriesLeft: 0,
-                    url: 'http://localhost:1234/',
-                    err: new httpErrors.NotFound(),
-                    requestOptions: {
-                        // ...
-                        host: 'localhost',
-                        port: 1234
-                    },
-                    response: expect.it('to be an object')
-                });
+            expect([ successfulRequestListener, failedRequestListener ], 'to have calls satisfying', [
+                {
+                    spy: failedRequestListener,
+                    args: [
+                        {
+                            numRetriesLeft: 0,
+                            url: 'http://localhost:1234/',
+                            err: new httpErrors.NotFound(),
+                            requestOptions: {
+                                // ...
+                                host: 'localhost',
+                                port: 1234
+                            },
+                            response: expect.it('to be an object')
+                        }
+                    ]
+                }
+            ]);
         });
     });
 
@@ -560,9 +566,11 @@ describe('Teepee', function () {
                     body: 'yaddayaddayadda'
                 }
             }, 'to call the callback without error').then(function () {
-                expect(eventEmitter.emit, 'was called with', 'response', expect.it('to be an object'), new Teepee.httpErrors.NotFound());
-                expect(eventEmitter.emit, 'was called with', 'error', new Teepee.httpErrors.NotFound());
-                expect(eventEmitter.emit, 'was never called with', 'success');
+                expect(eventEmitter.emit, 'to have calls satisfying', [
+                    { args: [ 'response', expect.it('to be an object'), new Teepee.httpErrors.NotFound() ] },
+                    { args: [ 'error', new Teepee.httpErrors.NotFound() ] },
+                    { args: { 0: 'responseBody' } }
+                ]);
             });
         });
 
@@ -574,9 +582,12 @@ describe('Teepee', function () {
             }, 'with http mocked out', {
                 response: 200
             }, 'to call the callback without error').then(function () {
-                expect(eventEmitter.emit, 'was called with', 'response', expect.it('to be an object'), undefined);
-                expect(eventEmitter.emit, 'was called with', 'success');
-                expect(eventEmitter.emit, 'was never called with', 'error');
+                expect(eventEmitter.emit, 'to have calls satisfying', [
+                    { args: [ 'response', expect.it('to be an object'), undefined ] },
+                    { args: { 0: 'success' } },
+                    { args: { 0: 'responseBody' } },
+                    { args: [ 'end' ] }
+                ]);
             });
         });
 
@@ -773,9 +784,9 @@ describe('Teepee', function () {
 
         it('should emit a retriedRequest every time a request is retried', function () {
             var teepee = new Teepee('http://localhost:1234/'),
-                successfulRequestListener = sinon.spy(),
-                failedRequestListener = sinon.spy(),
-                retriedRequestListener = sinon.spy();
+                successfulRequestListener = sinon.spy().named('successfulRequestListener'),
+                failedRequestListener = sinon.spy().named('failedRequestListener'),
+                retriedRequestListener = sinon.spy().named('retriedRequestListener');
             teepee
                 .on('failedRequest', failedRequestListener)
                 .on('successfulRequest', successfulRequestListener)
@@ -787,23 +798,28 @@ describe('Teepee', function () {
                 { response: 501 },
                 { response: 200 }
             ], 'to call the callback without error').then(function () {
-                expect(failedRequestListener, 'was not called');
-                expect(successfulRequestListener, 'was called once');
-                expect(retriedRequestListener.args, 'to satisfy', [
-                    [
-                        {
-                            numRetriesLeft: 1,
-                            err: new socketErrors.ETIMEDOUT(),
-                            requestOptions: { host: 'localhost' } // ...
-                        }
-                    ],
-                    [
-                        {
-                            numRetriesLeft: 0,
-                            err: new httpErrors.NotImplemented(),
-                            requestOptions: { host: 'localhost' } // ...
-                        }
-                    ]
+                expect([ failedRequestListener, successfulRequestListener, retriedRequestListener ], 'to have calls satisfying', [
+                    {
+                        spy: retriedRequestListener,
+                        args: [
+                            {
+                                numRetriesLeft: 1,
+                                err: new socketErrors.ETIMEDOUT(),
+                                requestOptions: { host: 'localhost' } // ...
+                            }
+                        ]
+                    },
+                    {
+                        spy: retriedRequestListener,
+                        args: [
+                            {
+                                numRetriesLeft: 0,
+                                err: new httpErrors.NotImplemented(),
+                                requestOptions: { host: 'localhost' } // ...
+                            }
+                        ]
+                    },
+                    { spy: successfulRequestListener }
                 ]);
             });
         });
@@ -944,7 +960,7 @@ describe('Teepee', function () {
                     });
 
                     it('should emit a retry event with a SelfRedirectError', function () {
-                        var retriedRequestListener = sinon.spy();
+                        var retriedRequestListener = sinon.spy().named('retriedRequestListener');
                         return expect(function (cb) {
                             var teepee = new Teepee('http://localhost:5984/');
                             teepee.on('retriedRequest', retriedRequestListener);
@@ -953,22 +969,27 @@ describe('Teepee', function () {
                             { response: { statusCode: 301, headers: { Location: 'http://localhost:5984/#foo' } } },
                             { response: 200 }
                         ], 'to call the callback without error').then(function () {
-                            expect(retriedRequestListener, 'was called once')
-                                .and('was always called with', {
-                                    url: 'http://localhost:5984/',
-                                    requestOptions: {
-                                        // ...
-                                        host: 'localhost',
-                                        port: 5984,
-                                        method: 'GET'
-                                    },
-                                    err: {
-                                        name: 'SelfRedirect',
-                                        data: {
-                                            location: 'http://localhost:5984/#foo'
+                            expect(retriedRequestListener, 'to have calls satisfying', [
+                                {
+                                    args: [
+                                        {
+                                            url: 'http://localhost:5984/',
+                                            requestOptions: {
+                                                // ...
+                                                host: 'localhost',
+                                                port: 5984,
+                                                method: 'GET'
+                                            },
+                                            err: {
+                                                name: 'SelfRedirect',
+                                                data: {
+                                                    location: 'http://localhost:5984/#foo'
+                                                }
+                                            }
                                         }
-                                    }
-                                });
+                                    ]
+                                }
+                            ]);
                         });
                     });
 
@@ -1710,8 +1731,8 @@ describe('Teepee', function () {
         it('should produce an instance that echoes events to the parent', function () {
             var teepee = new Teepee('http://localhost:1234/'),
                 subsidiary = teepee.subsidiary('http://localhost:4567/'),
-                subsidiaryRequestListener = sinon.spy(),
-                requestListener = sinon.spy();
+                subsidiaryRequestListener = sinon.spy().named('subsidiaryRequestListener'),
+                requestListener = sinon.spy().named('requestListener');
 
             teepee.on('request', requestListener);
             subsidiary.on('request', subsidiaryRequestListener);
@@ -1724,11 +1745,16 @@ describe('Teepee', function () {
                 { response: 200 },
                 { response: 200 }
             ], 'to call the callback without error').then(function () {
-                expect(subsidiaryRequestListener, 'was called once');
-                expect(requestListener, 'was called twice');
-                expect(requestListener.args, 'to satisfy', [
-                    [ { requestOptions: { port: 4567 } } ],
-                    [ { requestOptions: { port: 1234 } } ]
+                expect([ subsidiaryRequestListener, requestListener ], 'to have calls satisfying', [
+                    { spy: subsidiaryRequestListener },
+                    {
+                        spy: requestListener,
+                        args: [ { requestOptions: { port: 4567 } } ]
+                    },
+                    {
+                        spy: requestListener,
+                        args: [ { requestOptions: { port: 1234 } } ]
+                    }
                 ]);
             });
         });

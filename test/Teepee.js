@@ -1794,4 +1794,16 @@ describe('Teepee', function () {
             }, 'to call the callback without error');
         });
     });
+
+    it('should support passing the response stream as the request body for a subsequent request', function () {
+        return expect(function (cb) {
+            teepee('http://example.com/')
+                .on('success', function (response) {
+                    teepee({ url: 'http://somewhereelse.com/', method: 'PUT', body: response }, cb);
+                });
+        }, 'with http mocked out', [
+            { request: 'GET http://example.com/', response: { body: new Buffer('abcdef') } },
+            { request: { url: 'PUT http://somewhereelse.com/', body: new Buffer('abcdef') }, response: 200 }
+        ], 'to call the callback without error');
+    });
 });

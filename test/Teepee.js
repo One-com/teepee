@@ -1611,7 +1611,7 @@ describe('Teepee', function () {
         });
     });
 
-    expect.addAssertion('array', 'to result in request', function (expect, subject, value) {
+    expect.addAssertion('<array> to result in request <string|object>', function (expect, subject, value) {
         return expect(function (cb) {
             return new Teepee(subject[0]).request(subject[1], cb);
         }, 'with http mocked out', {

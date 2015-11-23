@@ -107,22 +107,17 @@ describe('Teepee', function () {
         }, 'with http mocked out', {
             response: 200
         }, 'to call the callback without error').then(function () {
-            expect([ failedRequestListener, successfulRequestListener ], 'to have calls satisfying', [
-                {
-                    spy: successfulRequestListener,
-                    args: [
-                        {
-                            url: 'http://localhost:1234/',
-                            requestOptions: {
-                                // ...
-                                host: 'localhost',
-                                port: 1234
-                            },
-                            response: expect.it('to be an object')
-                        }
-                    ]
-                }
-            ]);
+            expect([ failedRequestListener, successfulRequestListener ], 'to have calls satisfying', function () {
+                successfulRequestListener({
+                    url: 'http://localhost:1234/',
+                    requestOptions: {
+                        // ...
+                        host: 'localhost',
+                        port: 1234
+                    },
+                    response: expect.it('to be an object')
+                });
+            });
         });
     });
 
@@ -182,7 +177,7 @@ describe('Teepee', function () {
             { response: new socketErrors.ECONNRESET() },
             { response: 200 }
         ], 'to call the callback without error').then(function () {
-            expect(requestListener, 'was called twice').and('was always called with', {
+            expect(requestListener, 'was called twice').and('was always called with exactly', {
                 url: 'http://localhost:1234/',
                 requestOptions: {
                     // ...
@@ -205,24 +200,19 @@ describe('Teepee', function () {
         }, 'with http mocked out', {
             response: 404
         }, 'to call the callback with error', new httpErrors.NotFound()).then(function () {
-            expect([ successfulRequestListener, failedRequestListener ], 'to have calls satisfying', [
-                {
-                    spy: failedRequestListener,
-                    args: [
-                        {
-                            numRetriesLeft: 0,
-                            url: 'http://localhost:1234/',
-                            err: new httpErrors.NotFound(),
-                            requestOptions: {
-                                // ...
-                                host: 'localhost',
-                                port: 1234
-                            },
-                            response: expect.it('to be an object')
-                        }
-                    ]
-                }
-            ]);
+            expect([ successfulRequestListener, failedRequestListener ], 'to have calls satisfying', function () {
+                failedRequestListener({
+                    numRetriesLeft: 0,
+                    url: 'http://localhost:1234/',
+                    err: new httpErrors.NotFound(),
+                    requestOptions: {
+                        // ...
+                        host: 'localhost',
+                        port: 1234
+                    },
+                    response: expect.it('to be an object')
+                });
+            });
         });
     });
 
@@ -566,11 +556,11 @@ describe('Teepee', function () {
                     body: 'yaddayaddayadda'
                 }
             }, 'to call the callback without error').then(function () {
-                expect(eventEmitter.emit, 'to have calls satisfying', [
-                    { args: [ 'response', expect.it('to be an object'), new Teepee.httpErrors.NotFound() ] },
-                    { args: [ 'error', new Teepee.httpErrors.NotFound() ] },
-                    { args: { 0: 'responseBody' } }
-                ]);
+                expect(eventEmitter.emit, 'to have calls satisfying', function () {
+                    eventEmitter.emit('response', expect.it('to be an object'), new Teepee.httpErrors.NotFound());
+                    eventEmitter.emit('error', new Teepee.httpErrors.NotFound());
+                    eventEmitter.emit('responseBody', expect.it('to be an object'));
+                });
             });
         });
 
@@ -582,12 +572,12 @@ describe('Teepee', function () {
             }, 'with http mocked out', {
                 response: 200
             }, 'to call the callback without error').then(function () {
-                expect(eventEmitter.emit, 'to have calls satisfying', [
-                    { args: [ 'response', expect.it('to be an object'), undefined ] },
-                    { args: { 0: 'success' } },
-                    { args: { 0: 'responseBody' } },
-                    { args: [ 'end' ] }
-                ]);
+                expect(eventEmitter.emit, 'to have calls satisfying', function () {
+                    eventEmitter.emit('response', expect.it('to be an object'), undefined);
+                    eventEmitter.emit('success', expect.it('to be an object'));
+                    eventEmitter.emit('responseBody', expect.it('to be an object'));
+                    eventEmitter.emit('end');
+                });
             });
         });
 
@@ -798,29 +788,19 @@ describe('Teepee', function () {
                 { response: 501 },
                 { response: 200 }
             ], 'to call the callback without error').then(function () {
-                expect([ failedRequestListener, successfulRequestListener, retriedRequestListener ], 'to have calls satisfying', [
-                    {
-                        spy: retriedRequestListener,
-                        args: [
-                            {
-                                numRetriesLeft: 1,
-                                err: new socketErrors.ETIMEDOUT(),
-                                requestOptions: { host: 'localhost' } // ...
-                            }
-                        ]
-                    },
-                    {
-                        spy: retriedRequestListener,
-                        args: [
-                            {
-                                numRetriesLeft: 0,
-                                err: new httpErrors.NotImplemented(),
-                                requestOptions: { host: 'localhost' } // ...
-                            }
-                        ]
-                    },
-                    { spy: successfulRequestListener }
-                ]);
+                expect([ failedRequestListener, successfulRequestListener, retriedRequestListener ], 'to have calls satisfying', function () {
+                    retriedRequestListener({
+                        numRetriesLeft: 1,
+                        err: new socketErrors.ETIMEDOUT(),
+                        requestOptions: { host: 'localhost' } // ...
+                    });
+                    retriedRequestListener({
+                        numRetriesLeft: 0,
+                        err: new httpErrors.NotImplemented(),
+                        requestOptions: { host: 'localhost' } // ...
+                    });
+                    successfulRequestListener(expect.it('to be an object'));
+                });
             });
         });
 
@@ -969,27 +949,23 @@ describe('Teepee', function () {
                             { response: { statusCode: 301, headers: { Location: 'http://localhost:5984/#foo' } } },
                             { response: 200 }
                         ], 'to call the callback without error').then(function () {
-                            expect(retriedRequestListener, 'to have calls satisfying', [
-                                {
-                                    args: [
-                                        {
-                                            url: 'http://localhost:5984/',
-                                            requestOptions: {
-                                                // ...
-                                                host: 'localhost',
-                                                port: 5984,
-                                                method: 'GET'
-                                            },
-                                            err: {
-                                                name: 'SelfRedirect',
-                                                data: {
-                                                    location: 'http://localhost:5984/#foo'
-                                                }
-                                            }
+                            expect(retriedRequestListener, 'to have calls satisfying', function () {
+                                retriedRequestListener({
+                                    url: 'http://localhost:5984/',
+                                    requestOptions: {
+                                        // ...
+                                        host: 'localhost',
+                                        port: 5984,
+                                        method: 'GET'
+                                    },
+                                    err: {
+                                        name: 'SelfRedirect',
+                                        data: {
+                                            location: 'http://localhost:5984/#foo'
                                         }
-                                    ]
-                                }
-                            ]);
+                                    }
+                                });
+                            });
                         });
                     });
 
@@ -1745,17 +1721,11 @@ describe('Teepee', function () {
                 { response: 200 },
                 { response: 200 }
             ], 'to call the callback without error').then(function () {
-                expect([ subsidiaryRequestListener, requestListener ], 'to have calls satisfying', [
-                    { spy: subsidiaryRequestListener },
-                    {
-                        spy: requestListener,
-                        args: [ { requestOptions: { port: 4567 } } ]
-                    },
-                    {
-                        spy: requestListener,
-                        args: [ { requestOptions: { port: 1234 } } ]
-                    }
-                ]);
+                expect([ subsidiaryRequestListener, requestListener ], 'to have calls satisfying', function () {
+                    subsidiaryRequestListener(expect.it('to be an object'));
+                    requestListener({ requestOptions: { port: 4567 } });
+                    requestListener({ requestOptions: { port: 1234 } });
+                });
             });
         });
 

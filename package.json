@@ -33,6 +33,6 @@
     "unexpected": "10.3.1",
     "unexpected-messy": "5.0.0",
     "unexpected-mitm": "8.0.0",
-    "unexpected-sinon": "9.0.0"
+    "unexpected-sinon": "9.0.1"
   }
 }

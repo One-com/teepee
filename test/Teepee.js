@@ -1778,7 +1778,7 @@ describe('Teepee', function () {
         ], 'to call the callback without error');
     });
 
-    it('should foo', function () {
-        return expect(teepee('http://qwcoviejqocejqkwoiecjkqwoiejckqowiejckqoiwejckqowec.com/'), 'when rejected', 'to be a', dnsErrors.DnsError);
+    it('should map DNS errors to dnsErrors.DnsError instances', function () {
+        return expect(teepee('http://qwcoviejqocejqkwoiecjkqwoiejckqowiejckqoiwejckqowec.com/'), 'when rejected to be a', dnsErrors.DnsError);
     });
 });

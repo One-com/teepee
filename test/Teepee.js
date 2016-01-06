@@ -4,6 +4,7 @@ var Teepee = require('../lib/Teepee'),
     zlib = require('zlib'),
     httpErrors = require('httperrors'),
     socketErrors = require('socketerrors'),
+    dnsErrors = require('dnserrors'),
     passError = require('passerror'),
     unexpected = require('unexpected'),
     sinon = require('sinon'),
@@ -1775,5 +1776,9 @@ describe('Teepee', function () {
             { request: 'GET http://example.com/', response: { body: new Buffer('abcdef') } },
             { request: { url: 'PUT http://somewhereelse.com/', body: new Buffer('abcdef') }, response: 200 }
         ], 'to call the callback without error');
+    });
+
+    it('should foo', function () {
+        return expect(teepee('http://qwcoviejqocejqkwoiecjkqwoiejckqowiejckqoiwejckqowec.com/'), 'when rejected', 'to be a', dnsErrors.DnsError);
     });
 });

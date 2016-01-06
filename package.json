@@ -15,7 +15,7 @@
   "dependencies": {
     "bluebird": "2.9.34",
     "createerror": "1.0.1",
-    "httperrors": "1.1.0",
+    "httperrors": "1.2.0",
     "passerror": "1.1.0",
     "socketerrors": "0.1.1",
     "underscore": "1.4.0"

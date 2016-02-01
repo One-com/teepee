@@ -17,8 +17,8 @@ var Teepee = require('../lib/Teepee'),
 
 describe('Teepee', function () {
     var expect = unexpected.clone()
-        .installPlugin(require('unexpected-mitm'))
-        .installPlugin(require('unexpected-sinon'));
+        .use(require('unexpected-mitm'))
+        .use(require('unexpected-sinon'));
 
     it('should not overwrite a built-in method with a config object property', function () {
         expect(new Teepee({

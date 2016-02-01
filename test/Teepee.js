@@ -20,6 +20,92 @@ describe('Teepee', function () {
         .use(require('unexpected-mitm'))
         .use(require('unexpected-sinon'));
 
+    describe('request shorthands named after the method', function () {
+        it('should allow making a POST request via Teepee.post(<string>)', function () {
+            return expect(function () {
+                return Teepee.post('http://www.example.com/');
+            }, 'with http mocked out', {
+                request: 'POST http://www.example.com/',
+                response: 200
+            }, 'not to error');
+        });
+
+        it('should allow making a POST request via Teepee.post({ url: <string> })', function () {
+            return expect(function () {
+                return Teepee.post({ url: 'http://www.example.com/' });
+            }, 'with http mocked out', {
+                request: 'POST http://www.example.com/',
+                response: 200
+            }, 'not to error');
+        });
+
+        it('should alias Teepee.delete as Teepee.del', function () {
+            return expect(function () {
+                return Teepee.del('http://www.example.com/');
+            }, 'with http mocked out', {
+                request: 'DELETE http://www.example.com/',
+                response: 200
+            }, 'not to error');
+        });
+
+        it('should throw if attempting to pass non-string, non-object to Teepee.post()', function () {
+            return expect(function () {
+                return Teepee.post(1234);
+            }, 'with http mocked out', [], 'to throw', 'Teepee.post: First argument must be either an object or a string');
+        });
+
+        it('should allow making a POST request via new Teepee().post(<string>)', function () {
+            return expect(function () {
+                return new Teepee().post('http://www.example.com/');
+            }, 'with http mocked out', {
+                request: 'POST http://www.example.com/',
+                response: 200
+            }, 'not to error');
+        });
+
+        it('should allow making a POST request via new Teepee().post({ url: <string> })', function () {
+            return expect(function () {
+                return new Teepee().post({ url: 'http://www.example.com/' });
+            }, 'with http mocked out', {
+                request: 'POST http://www.example.com/',
+                response: 200
+            }, 'not to error');
+        });
+
+        it('should allow making a POST request via new Teepee(<url>).post()', function () {
+            return expect(function () {
+                return new Teepee('http://www.example.com/').post();
+            }, 'with http mocked out', {
+                request: 'POST http://www.example.com/',
+                response: 200
+            }, 'not to error');
+        });
+
+        it('should allow making a POST request via new Teepee(<url>).post(<function>)', function () {
+            return expect(function (cb) {
+                new Teepee('http://www.example.com/').post(cb);
+            }, 'with http mocked out', {
+                request: 'POST http://www.example.com/',
+                response: 200
+            }, 'to call the callback without error');
+        });
+
+        it('should alias Teepee.prototype.delete as Teepee.prototype.del', function () {
+            return expect(function () {
+                return new Teepee().del('http://www.example.com/');
+            }, 'with http mocked out', {
+                request: 'DELETE http://www.example.com/',
+                response: 200
+            }, 'not to error');
+        });
+
+        it('should throw if attempting to pass non-string, non-object to Teepee.post()', function () {
+            return expect(function () {
+                return new Teepee('http://www.example.com/').post(1234);
+            }, 'with http mocked out', [], 'to throw', 'Teepee.post: First argument must be either an object or a string');
+        });
+    });
+
     it('should not overwrite a built-in method with a config object property', function () {
         expect(new Teepee({
             url: 'http://localhost',

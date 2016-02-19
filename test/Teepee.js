@@ -1867,4 +1867,9 @@ describe('Teepee', function () {
     it('should map DNS errors to dnsErrors.DnsError instances', function () {
         return expect(teepee('http://qwcoviejqocejqkwoiecjkqwoiejckqowiejckqoiwejckqowec.com/'), 'when rejected to be a', dnsErrors.DnsError);
     });
+
+    it('should map socket errors to socketErrors.SocketError instances', function () {
+        return expect(teepee({ url: 'http://gofish.dk/', timeout: 1 }), 'when rejected',
+            expect.it('to be a', socketErrors.ETIMEDOUT).and('to be a', socketErrors.SocketError));
+    });
 });

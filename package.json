@@ -18,7 +18,7 @@
     "dnserrors": "1.0.0",
     "httperrors": "1.2.0",
     "passerror": "1.1.0",
-    "socketerrors": "0.1.1",
+    "socketerrors": "0.2.0",
     "underscore": "1.4.0"
   },
   "publishConfig": {

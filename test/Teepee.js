@@ -1095,7 +1095,7 @@ describe('Teepee', function () {
                         return expect(function (cb) {
                             new Teepee('http://localhost:5984/').request({ numRetries: 1, retry: 'selfRedirect' }, cb);
                         }, 'with http mocked out', [
-                            { response: { statusCode: 301, headers: { Location: 'vqwe\x1e' } } }
+                            { response: { statusCode: 301, headers: { Location: 'vqwe' } } }
                         ], 'to call the callback without error');
                     });
                 });

@@ -1868,6 +1868,14 @@ describe('Teepee', function () {
         return expect(teepee('http://qwcoviejqocejqkwoiecjkqwoiejckqowiejckqoiwejckqowec.com/'), 'when rejected to be a', dnsErrors.DnsError);
     });
 
+    it('should allow calling .then() more than once', function () {
+        return expect(function (cb) {
+            var request = teepee('http://foo.com/');
+            request.then(function () {});
+            request.then(function () {});
+        }, 'with http mocked out', [], 'not to throw');
+    });
+
     it('should map socket errors to socketErrors.SocketError instances', function () {
         return expect(teepee({ url: 'http://gofish.dk/', timeout: 1 }), 'when rejected',
             expect.it('to be a', socketErrors.ETIMEDOUT).and('to be a', socketErrors.SocketError));

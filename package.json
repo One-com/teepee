@@ -18,7 +18,7 @@
     "dnserrors": "2.0.0",
     "httperrors": "2.0.1",
     "passerror": "1.1.0",
-    "socketerrors": "papandreou/node-socketerrors#feature/superclassConstructorAsMainExport",
+    "socketerrors": "git://github.com/papandreou/node-socketerrors.git#feature/superclassConstructorAsMainExport",
     "underscore": "1.4.0"
   },
   "publishConfig": {

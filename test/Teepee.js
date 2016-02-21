@@ -3,7 +3,7 @@ var Teepee = require('../lib/Teepee'),
     teepee = Teepee, // Alias so that jshint doesn't complain when invoking without new
     zlib = require('zlib'),
     HttpError = require('httperrors'),
-    socketErrors = require('socketerrors'),
+    SocketError = require('socketerrors'),
     DnsError = require('dnserrors'),
     passError = require('passerror'),
     unexpected = require('unexpected'),
@@ -261,7 +261,7 @@ describe('Teepee', function () {
         return expect(function (cb) {
             teepee.request({ numRetries: 1 }, cb);
         }, 'with http mocked out', [
-            { response: new socketErrors.ECONNRESET() },
+            { response: new SocketError.ECONNRESET() },
             { response: 200 }
         ], 'to call the callback without error').then(function () {
             expect(requestListener, 'was called twice').and('was always called with exactly', {
@@ -782,7 +782,7 @@ describe('Teepee', function () {
                 return expect(function (cb) {
                     new Teepee('http://www.gofish.dk/').request({timeout: 1})
                         .on('error', function (err) {
-                            expect(err, 'to equal', new socketErrors.ETIMEDOUT());
+                            expect(err, 'to equal', new SocketError.ETIMEDOUT());
                             cb();
                         });
                 }, 'to call the callback without error');
@@ -794,7 +794,7 @@ describe('Teepee', function () {
                 return expect(function (cb) {
                     new Teepee({url: 'http://www.gofish.dk/', timeout: 1}).request()
                         .on('error', function (err) {
-                            expect(err, 'to equal', new socketErrors.ETIMEDOUT());
+                            expect(err, 'to equal', new SocketError.ETIMEDOUT());
                             cb();
                         });
                 }, 'to call the callback without error');
@@ -807,8 +807,8 @@ describe('Teepee', function () {
             return expect(function (cb) {
                 new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2 }, cb);
             }, 'with http mocked out', [
-                { response: new socketErrors.ETIMEDOUT() },
-                { response: new socketErrors.ETIMEDOUT() },
+                { response: new SocketError.ETIMEDOUT() },
+                { response: new SocketError.ETIMEDOUT() },
                 { response: 200 }
             ], 'to call the callback without error');
         });
@@ -871,14 +871,14 @@ describe('Teepee', function () {
             return expect(function (cb) {
                 teepee.request({ path: 'foo', numRetries: 2, retry: [ 501 ] }, cb);
             }, 'with http mocked out', [
-                { response: new socketErrors.ETIMEDOUT() },
+                { response: new SocketError.ETIMEDOUT() },
                 { response: 501 },
                 { response: 200 }
             ], 'to call the callback without error').then(function () {
                 expect([ failedRequestListener, successfulRequestListener, retriedRequestListener ], 'to have calls satisfying', function () {
                     retriedRequestListener({
                         numRetriesLeft: 1,
-                        err: new socketErrors.ETIMEDOUT(),
+                        err: new SocketError.ETIMEDOUT(),
                         requestOptions: { host: 'localhost' } // ...
                     });
                     retriedRequestListener({
@@ -895,10 +895,10 @@ describe('Teepee', function () {
             return expect(function (cb) {
                 new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2 }, cb);
             }, 'with http mocked out', [
-                { response: new socketErrors.ETIMEDOUT() },
-                { response: new socketErrors.ETIMEDOUT() },
-                { response: new socketErrors.ETIMEDOUT() }
-            ], 'to call the callback with error', new socketErrors.ETIMEDOUT());
+                { response: new SocketError.ETIMEDOUT() },
+                { response: new SocketError.ETIMEDOUT() },
+                { response: new SocketError.ETIMEDOUT() }
+            ], 'to call the callback with error', new SocketError.ETIMEDOUT());
         });
 
         it('should not attempt to retry a request with the body given as a stream, despite a `numRetries` setting', function () {
@@ -906,8 +906,8 @@ describe('Teepee', function () {
                 new Teepee('http://localhost:5984/')
                     .request({ method: 'POST', body: fs.createReadStream(pathModule.resolve(__dirname, '..', 'testdata', '0byte')), path: 'foo', numRetries: 2 }, cb);
             }, 'with http mocked out', {
-                response: new socketErrors.ETIMEDOUT()
-            }, 'to call the callback with error', new socketErrors.ETIMEDOUT());
+                response: new SocketError.ETIMEDOUT()
+            }, 'to call the callback with error', new SocketError.ETIMEDOUT());
         });
 
         describe('with the retryDelayMilliseconds option', function () {
@@ -923,7 +923,7 @@ describe('Teepee', function () {
                     return expect(function (cb) {
                         new Teepee({ url: 'http://localhost:5984/', retryDelayMilliseconds: 3, numRetries: 1 }).request(cb);
                     }, 'with http mocked out', [
-                        { response: new socketErrors.ETIMEDOUT() },
+                        { response: new SocketError.ETIMEDOUT() },
                         { response: 200 }
                     ], 'to call the callback without error').then(function () {
                         expect(setTimeoutSpy, 'was called with', expect.it('to be a function'), 3);
@@ -936,7 +936,7 @@ describe('Teepee', function () {
                     return expect(function (cb) {
                         new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 1, retryDelayMilliseconds: 3 }, cb);
                     }, 'with http mocked out', [
-                        { response: new socketErrors.ETIMEDOUT() },
+                        { response: new SocketError.ETIMEDOUT() },
                         { response: 200 }
                     ], 'to call the callback without error').then(function () {
                         expect(setTimeoutSpy, 'was called with', expect.it('to be a function'), 3);
@@ -1107,8 +1107,8 @@ describe('Teepee', function () {
         return expect(function (cb) {
             new Teepee('http://localhost:5984/').request('foo', cb);
         }, 'with http mocked out', {
-            response: new socketErrors.ECONNREFUSED('connect ECONNREFUSED')
-        }, 'to call the callback with error', new socketErrors.ECONNREFUSED('connect ECONNREFUSED'));
+            response: new SocketError.ECONNREFUSED('connect ECONNREFUSED')
+        }, 'to call the callback with error', new SocketError.ECONNREFUSED('connect ECONNREFUSED'));
     });
 
     it('should handle unknown errors', function () {
@@ -1876,8 +1876,8 @@ describe('Teepee', function () {
         }, 'with http mocked out', [], 'not to throw');
     });
 
-    it('should map socket errors to socketErrors.SocketError instances', function () {
+    it('should map socket errors to SocketError instances', function () {
         return expect(teepee({ url: 'http://gofish.dk/', timeout: 1 }), 'when rejected',
-            expect.it('to be a', socketErrors.ETIMEDOUT).and('to be a', socketErrors.SocketError));
+            expect.it('to be a', SocketError.ETIMEDOUT).and('to be a', SocketError.SocketError));
     });
 });

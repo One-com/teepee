@@ -2,9 +2,9 @@
 var Teepee = require('../lib/Teepee'),
     teepee = Teepee, // Alias so that jshint doesn't complain when invoking without new
     zlib = require('zlib'),
-    httpErrors = require('httperrors'),
+    HttpError = require('httperrors'),
     socketErrors = require('socketerrors'),
-    dnsErrors = require('dnserrors'),
+    DnsError = require('dnserrors'),
     passError = require('passerror'),
     unexpected = require('unexpected'),
     sinon = require('sinon'),
@@ -286,12 +286,12 @@ describe('Teepee', function () {
             teepee.request(cb);
         }, 'with http mocked out', {
             response: 404
-        }, 'to call the callback with error', new httpErrors.NotFound()).then(function () {
+        }, 'to call the callback with error', new HttpError.NotFound()).then(function () {
             expect([ successfulRequestListener, failedRequestListener ], 'to have calls satisfying', function () {
                 failedRequestListener({
                     numRetriesLeft: 0,
                     url: 'http://localhost:1234/',
-                    err: new httpErrors.NotFound(),
+                    err: new HttpError.NotFound(),
                     requestOptions: {
                         // ...
                         host: 'localhost',
@@ -763,16 +763,16 @@ describe('Teepee', function () {
                 }, 'with http mocked out', {
                     request: 'GET http://localhost/',
                     response: 404
-                }, 'to error', new httpErrors.NotFound());
+                }, 'to error', new HttpError.NotFound());
             });
         });
 
-        it('should instantiate an httpErrors.Unknown error if an unmapped status code is returned from the server', function () {
+        it('should instantiate an HttpError error if an unmapped status code is returned from the server', function () {
             return expect(function () {
                 return teepee('http://foo.com/');
             }, 'with http mocked out', {
                 response: 598
-            }, 'to error', new httpErrors.Unknown({ statusCode: 598 }));
+            }, 'to error', new HttpError(598));
         });
     });
 
@@ -831,7 +831,7 @@ describe('Teepee', function () {
                 new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2 }, cb);
             }, 'with http mocked out', [
                 { response: 503 }
-            ], 'to call the callback with error', new httpErrors.ServiceUnavailable());
+            ], 'to call the callback with error', new HttpError.ServiceUnavailable());
         });
 
         it('should retry a request that times out while buffering up the response', function () {
@@ -883,7 +883,7 @@ describe('Teepee', function () {
                     });
                     retriedRequestListener({
                         numRetriesLeft: 0,
-                        err: new httpErrors.NotImplemented(),
+                        err: new HttpError.NotImplemented(),
                         requestOptions: { host: 'localhost' } // ...
                     });
                     successfulRequestListener(expect.it('to be an object'));
@@ -973,7 +973,7 @@ describe('Teepee', function () {
                             .on('request', function (request) {});
                     }, 'with http mocked out', [
                         { response: 504 }
-                    ], 'to call the callback with error', new httpErrors.GatewayTimeout());
+                    ], 'to call the callback with error', new HttpError.GatewayTimeout());
                 });
 
                 it('should not retry an unsuccessful request if the HTTP status code is not in the array', function () {
@@ -981,7 +981,7 @@ describe('Teepee', function () {
                         new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2, retry: [504] }, cb);
                     }, 'with http mocked out', [
                         { response: 503 }
-                    ], 'to call the callback with error', new httpErrors.ServiceUnavailable());
+                    ], 'to call the callback with error', new HttpError.ServiceUnavailable());
                 });
 
                 it('should retry a non-successful request if the HTTP status code is covered by a "wildcard"', function () {
@@ -992,7 +992,7 @@ describe('Teepee', function () {
                         { response: 504 },
                         { response: 520 },
                         { response: 412 }
-                    ], 'to call the callback with error', new httpErrors.PreconditionFailed());
+                    ], 'to call the callback with error', new HttpError.PreconditionFailed());
                 });
 
                 it('should retry an unsuccessful request if "httpError" is in the retry array', function () {
@@ -1118,7 +1118,7 @@ describe('Teepee', function () {
             new Teepee('http://localhost:5984/').request('foo', cb);
         }, 'with http mocked out', {
             response: error
-        }, 'to call the callback with error', new httpErrors[500](error.message));
+        }, 'to call the callback with error', new HttpError[500](error.message));
     });
 
     describe('with a streamed response', function () {
@@ -1206,7 +1206,7 @@ describe('Teepee', function () {
                     },
                     body: responseStream
                 }
-            }, 'to call the callback with error', new httpErrors.BadGateway('Error parsing JSON response body'));
+            }, 'to call the callback with error', new HttpError.BadGateway('Error parsing JSON response body'));
         });
     });
 
@@ -1864,8 +1864,8 @@ describe('Teepee', function () {
         ], 'to call the callback without error');
     });
 
-    it('should map DNS errors to dnsErrors.DnsError instances', function () {
-        return expect(teepee('http://qwcoviejqocejqkwoiecjkqwoiejckqowiejckqoiwejckqowec.com/'), 'when rejected to be a', dnsErrors.DnsError);
+    it('should map DNS errors to DnsError instances', function () {
+        return expect(teepee('http://qwcoviejqocejqkwoiecjkqwoiejckqowiejckqoiwejckqowec.com/'), 'when rejected to be a', DnsError);
     });
 
     it('should allow calling .then() more than once', function () {

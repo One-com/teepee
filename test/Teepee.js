@@ -1880,4 +1880,13 @@ describe('Teepee', function () {
         return expect(teepee({ url: 'http://gofish.dk/', timeout: 1 }), 'when rejected',
             expect.it('to be a', SocketError.ETIMEDOUT).and('to be a', SocketError.SocketError));
     });
+
+    it('should accept a password-less url', function () {
+        return expect(function () {
+            return teepee('http://foo:@example.com/');
+        }, 'with http mocked out', {
+            request: { url: 'GET http://example.com/', headers: { authorization: 'Basic Zm9v' } },
+            response: 200
+        }, 'not to error');
+    });
 });

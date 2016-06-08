@@ -549,19 +549,36 @@ describe('Teepee', function () {
         }, 'to call the callback without error');
     });
 
-    it('should allow specifying the request body as an object, implying JSON', function () {
-        return expect(function (cb) {
-            new Teepee('http://localhost:5984/').request({ method: 'POST', path: 'foo', body: { what: 'gives' } }, cb);
-        }, 'with http mocked out', {
-            request: {
-                url: 'POST http://localhost:5984/foo',
-                headers: {
-                    'Content-Type': 'application/json'
+    describe('when specifying the request body as an object', function () {
+        it('should send a JSON request', function () {
+            return expect(function () {
+                return new Teepee('http://localhost:5984/').request({ method: 'POST', path: 'foo', body: { what: 'gives' } });
+            }, 'with http mocked out', {
+                request: {
+                    url: 'POST http://localhost:5984/foo',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: { what: 'gives' }
                 },
-                body: { what: 'gives' }
-            },
-            response: 200
-        }, 'to call the callback without error');
+                response: 200
+            }, 'not to error');
+        });
+
+        it('should not overwrite an existing Content-Type header', function () {
+            return expect(function () {
+                return new Teepee('http://localhost:5984/').request({ method: 'POST', headers: {'content-type': 'application/vnd.api+json'}, body: { what: 'gives' } });
+            }, 'with http mocked out', {
+                request: {
+                    url: 'POST http://localhost:5984/',
+                    headers: {
+                        'Content-Type': 'application/vnd.api+json'
+                    },
+                    body: { what: 'gives' }
+                },
+                response: 200
+            }, 'not to error');
+        });
     });
 
     it('should return an object with an abort method', function () {

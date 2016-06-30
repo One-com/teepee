@@ -183,6 +183,22 @@ describe('Teepee', function () {
         }, 'to call the callback without error');
     });
 
+    it('should ignore headers values of undefined', function () {
+        var undefinedVariable;
+        return expect(function (cb) {
+            new Teepee({
+                url: 'http://localhost:1234/',
+                headers: {
+                    'content-type': undefinedVariable
+                }
+            }).request(cb);
+        }, 'with http mocked out', {
+            request: {
+                headers: expect.it('not to have property', 'content-type')
+            }
+        }, 'to call the callback without error');
+    });
+
     it('should emit a successfulRequest event on 200 OK response', function () {
         var teepee = new Teepee('http://localhost:1234/'),
             successfulRequestListener = sinon.spy().named('successfulRequestListener'),

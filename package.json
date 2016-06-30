@@ -7,7 +7,7 @@
   "license": "BSD-3-Clause",
   "repository": "git://github.com/One-com/teepee",
   "scripts": {
-    "lint": "jshint .",
+    "lint": "eslint .",
     "test": "mocha && npm run lint",
     "travis": "npm test && npm run coverage && (<coverage/lcov.info coveralls || true)",
     "coverage": "NODE_ENV=development istanbul cover _mocha -- --reporter dot && echo google-chrome coverage/lcov-report/index.html"
@@ -26,8 +26,9 @@
   },
   "devDependencies": {
     "coveralls": "2.11.9",
+    "eslint": "2.13.1",
+    "eslint-config-onelint": "1.1.0",
     "istanbul": "0.4.3",
-    "jshint": "2.9.2",
     "mocha": "2.5.3",
     "sinon": "1.17.4",
     "unexpected": "10.13.3",

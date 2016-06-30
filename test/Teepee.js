@@ -871,7 +871,7 @@ describe('Teepee', function () {
             }, 'to call the callback without error').spread(function (response, body) {
                 expect(body, 'to equal', new Buffer('FooBar'));
                 expect(requestHandler, 'was called twice');
-            })['finally'](function () {
+            }).finally(function () {
                 server.close();
             });
         });
@@ -930,7 +930,7 @@ describe('Teepee', function () {
         describe('with the retryDelayMilliseconds option', function () {
             var setTimeoutSpy;
             beforeEach(function () {
-                 setTimeoutSpy = sinon.spy(typeof window !== 'undefined' ? window : global, 'setTimeout');
+                setTimeoutSpy = sinon.spy(typeof window !== 'undefined' ? window : global, 'setTimeout');
             });
             afterEach(function () {
                 setTimeoutSpy.restore();

@@ -106,6 +106,30 @@ describe('Teepee', function () {
         });
     });
 
+    it('should allow specifying a default query to the constructor', function () {
+        return expect(function () {
+            return new Teepee({query: {foo: 123}}).get('http://www.google.com/');
+        }, 'with http mocked out', [
+            { request: 'GET http://www.google.com/?foo=123', response: 200 }
+        ], 'not to error');
+    });
+
+    it('should override the default query when passing a conflicting option to request', function () {
+        return expect(function () {
+            return new Teepee({query: {foo: 123}}).get({url: 'http://www.google.com/', query: {foo: 456}});
+        }, 'with http mocked out', [
+            { request: 'GET http://www.google.com/?foo=456', response: 200 }
+        ], 'not to error');
+    });
+
+    it('should mix into the default query when creating a subsidiary', function () {
+        return expect(function () {
+            return new Teepee({query: {foo: 123}}).subsidiary({query: {bar: 789}}).get('http://www.google.com/');
+        }, 'with http mocked out', [
+            { request: 'GET http://www.google.com/?bar=789&foo=123', response: 200 }
+        ], 'not to error');
+    });
+
     it('should not overwrite a built-in method with a config object property', function () {
         expect(new Teepee({
             url: 'http://localhost',

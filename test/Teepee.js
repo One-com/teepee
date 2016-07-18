@@ -1286,22 +1286,33 @@ describe('Teepee', function () {
             }, 'to call the callback without error');
         });
 
-        it('should allow specifying the query string as an object', function () {
-            return expect(function (cb) {
-                new Teepee('http://localhost:5984/').request({ path: 'bar/quux', query: {
-                    ascii: 'blabla',
-                    nønascïî: 'nønascïî',
-                    multiple: [ 'foo', 'nønascïî' ],
-                    iAmUndefined: undefined
-                }}, cb);
-            }, 'with http mocked out', {
-                request: 'GET http://localhost:5984/bar/quux' +
-                    '?ascii=blabla' +
-                    '&n%C3%B8nasc%C3%AF%C3%AE=n%C3%B8nasc%C3%AF%C3%AE' +
-                    '&multiple=foo' +
-                    '&multiple=n%C3%B8nasc%C3%AF%C3%AE',
-                response: 200
-            }, 'to call the callback without error');
+        describe('when specifying the query string as an object', function () {
+            it('should url encode the parameter names and values and omit parameters with undefined values', function () {
+                return expect(function (cb) {
+                    new Teepee('http://localhost:5984/').request({ path: 'bar/quux', query: {
+                        ascii: 'blabla',
+                        nønascïî: 'nønascïî',
+                        multiple: [ 'foo', 'nønascïî' ],
+                        iAmUndefined: undefined
+                    }}, cb);
+                }, 'with http mocked out', {
+                    request: 'GET http://localhost:5984/bar/quux' +
+                        '?ascii=blabla' +
+                        '&n%C3%B8nasc%C3%AF%C3%AE=n%C3%B8nasc%C3%AF%C3%AE' +
+                        '&multiple=foo' +
+                        '&multiple=n%C3%B8nasc%C3%AF%C3%AE',
+                    response: 200
+                }, 'to call the callback without error');
+            });
+
+            it('should not add a ? or & to the url when every parameter has an undefined value', function () {
+                return expect(function () {
+                    return new Teepee('http://localhost:5984/').request({ query: { iAmUndefined: undefined } });
+                }, 'with http mocked out', {
+                    request: 'GET http://localhost:5984/',
+                    response: 200
+                }, 'not to error');
+            });
         });
     });
 

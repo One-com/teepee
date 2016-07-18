@@ -1905,6 +1905,23 @@ describe('Teepee', function () {
         });
     });
 
+    describe('with a custom preprocessQueryStringParameterValue', function () {
+        it('should use the value returned by the function', function () {
+            sinon.stub(Teepee.prototype, 'preprocessQueryStringParameterValue').returns('bogus');
+            return expect(function () {
+                return teepee({url: 'http://www.google.com/', query: {foo: 'bar'}});
+            }, 'with http mocked out', {
+                request: 'http://www.google.com/?foo=bogus'
+            }, 'not to error').then(function () {
+                expect(Teepee.prototype.preprocessQueryStringParameterValue, 'to have calls satisfying', function () {
+                    Teepee.prototype.preprocessQueryStringParameterValue('bar', 'foo');
+                });
+            }).finally(function () {
+                Teepee.prototype.preprocessQueryStringParameterValue.restore();
+            });
+        });
+    });
+
     describe('with preprocessRequestOptions', function () {
         it('should allow overriding the protocol, host, port, path, and headers', function () {
             var teepee = new Teepee('http://example.com/foo', {headers: {Foo: 'bar'}});

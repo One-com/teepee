@@ -1277,6 +1277,15 @@ describe('Teepee', function () {
             }, 'to call the callback without error');
         });
 
+        it('should treat an empty string as a no-op', function () {
+            return expect(function (cb) {
+                new Teepee('http://localhost:5984/').request({ path: 'bar/quux', query: '' }, cb);
+            }, 'with http mocked out', {
+                request: 'GET http://localhost:5984/bar/quux',
+                response: 200
+            }, 'to call the callback without error');
+        });
+
         it('should allow specifying the query string as an object', function () {
             return expect(function (cb) {
                 new Teepee('http://localhost:5984/').request({ path: 'bar/quux', query: {

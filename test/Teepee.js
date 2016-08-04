@@ -1983,4 +1983,12 @@ describe('Teepee', function () {
             response: 200
         }, 'not to error');
     });
+
+    it('should accept a url with a pipe in the query string', function () {
+        return expect(function () {
+            return teepee('https://fonts.googleapis.com/css?family=Just+Another+Hand|Inconsolata:700');
+        }, 'with http mocked out', {
+            response: 200
+        }, 'not to error');
+    });
 });

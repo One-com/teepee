@@ -977,12 +977,12 @@ describe('Teepee', function () {
             });
             describe('when passed to the constructor', function () {
                 it('waits that many milliseconds before retrying', function () {
-                    return expect(function (cb) {
-                        new Teepee({ url: 'http://localhost:5984/', retryDelayMilliseconds: 3, numRetries: 1 }).request(cb);
+                    return expect(function () {
+                        return new Teepee({ url: 'http://localhost:5984/', retryDelayMilliseconds: 3, numRetries: 1 }).request();
                     }, 'with http mocked out', [
                         { response: new SocketError.ETIMEDOUT() },
                         { response: 200 }
-                    ], 'to call the callback without error').then(function () {
+                    ], 'not to error').then(function () {
                         expect(setTimeoutSpy, 'was called with', expect.it('to be a function'), 3);
                     });
                 });

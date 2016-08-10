@@ -20,6 +20,14 @@ describe('Teepee', function () {
         .use(require('unexpected-mitm'))
         .use(require('unexpected-sinon'));
 
+    var sandbox;
+    beforeEach(function () {
+        sandbox = sinon.sandbox.create();
+    });
+    afterEach(function () {
+        sandbox.restore();
+    });
+
     describe('request shorthands named after the method', function () {
         it('should allow making a POST request via Teepee.post(<string>)', function () {
             return expect(function () {
@@ -968,13 +976,10 @@ describe('Teepee', function () {
         });
 
         describe('with the retryDelayMilliseconds option', function () {
-            var setTimeoutSpy;
             beforeEach(function () {
-                setTimeoutSpy = sinon.spy(typeof window !== 'undefined' ? window : global, 'setTimeout');
+                sandbox.spy(typeof window !== 'undefined' ? window : global, 'setTimeout');
             });
-            afterEach(function () {
-                setTimeoutSpy.restore();
-            });
+
             describe('when passed to the constructor', function () {
                 it('waits that many milliseconds before retrying', function () {
                     return expect(function () {
@@ -983,7 +988,9 @@ describe('Teepee', function () {
                         { response: new SocketError.ETIMEDOUT() },
                         { response: 200 }
                     ], 'not to error').then(function () {
-                        expect(setTimeoutSpy, 'was called with', expect.it('to be a function'), 3);
+                        expect(sandbox, 'to have a call satisfying', function () {
+                            setTimeout(expect.it('to be a function'), 3);
+                        });
                     });
                 });
             });
@@ -991,12 +998,12 @@ describe('Teepee', function () {
             describe('when passed to the request function', function () {
                 it('waits that many milliseconds before retrying', function () {
                     return expect(function (cb) {
-                        new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 1, retryDelayMilliseconds: 3 }, cb);
+                        return new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 1, retryDelayMilliseconds: 3 });
                     }, 'with http mocked out', [
                         { response: new SocketError.ETIMEDOUT() },
                         { response: 200 }
-                    ], 'to call the callback without error').then(function () {
-                        expect(setTimeoutSpy, 'was called with', expect.it('to be a function'), 3);
+                    ], 'not to error').then(function () {
+                        expect(setTimeout, 'was called with', expect.it('to be a function'), 3);
                     });
                 });
             });
@@ -1907,7 +1914,7 @@ describe('Teepee', function () {
 
     describe('with a custom preprocessQueryStringParameterValue', function () {
         it('should use the value returned by the function', function () {
-            sinon.stub(Teepee.prototype, 'preprocessQueryStringParameterValue').returns('bogus');
+            sandbox.stub(Teepee.prototype, 'preprocessQueryStringParameterValue').returns('bogus');
             return expect(function () {
                 return teepee({url: 'http://www.google.com/', query: {foo: 'bar'}});
             }, 'with http mocked out', {
@@ -1916,8 +1923,6 @@ describe('Teepee', function () {
                 expect(Teepee.prototype.preprocessQueryStringParameterValue, 'to have calls satisfying', function () {
                     Teepee.prototype.preprocessQueryStringParameterValue('bar', 'foo');
                 });
-            }).finally(function () {
-                Teepee.prototype.preprocessQueryStringParameterValue.restore();
             });
         });
     });

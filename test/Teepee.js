@@ -2010,7 +2010,8 @@ describe('Teepee', function () {
                     'Content-Type': 'text/plain',
                     'Content-Encoding': 'gzip'
                 },
-                unchunkedBody: zlib.gzipSync('foobarquux')
+                // zlib.gzipSync('foobarquux') (not supported with node.js 0.10)
+                unchunkedBody: new Buffer([0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x4b, 0xcb, 0xcf, 0x4f, 0x4a, 0x2c, 0x2a, 0x2c, 0x2d, 0xad, 0x00, 0x00, 0x40, 0xcb, 0xde, 0x64, 0x0a, 0x00, 0x00, 0x00])
             }
         }, 'not to error');
     });
@@ -2028,7 +2029,8 @@ describe('Teepee', function () {
                     'Content-Type': 'text/plain',
                     'Content-Encoding': 'deflate'
                 },
-                unchunkedBody: zlib.deflateSync('foobarquux')
+                // zlib.deflateSync('foobarquux') (not supported with node.js 0.10)
+                unchunkedBody: new Buffer([0x78, 0x9c, 0x4b, 0xcb, 0xcf, 0x4f, 0x4a, 0x2c, 0x2a, 0x2c, 0x2d, 0xad, 0x00, 0x00, 0x17, 0x18, 0x04, 0x4d])
             }
         }, 'not to error');
     });

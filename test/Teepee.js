@@ -1996,4 +1996,40 @@ describe('Teepee', function () {
             response: 200
         }, 'not to error');
     });
+
+    it('should decode a gzipped response body', function () {
+        return expect(function () {
+            return teepee('http://example.com/')
+                .then(function (response) {
+                    expect(response.body, 'to equal', new Buffer('foobarquux', 'utf-8'));
+                });
+        }, 'with http mocked out', {
+            request: 'GET http://example.com/',
+            response: {
+                headers: {
+                    'Content-Type': 'text/plain',
+                    'Content-Encoding': 'gzip'
+                },
+                unchunkedBody: zlib.gzipSync('foobarquux')
+            }
+        }, 'not to error');
+    });
+
+    it('should decode a deflated response body', function () {
+        return expect(function () {
+            return teepee('http://example.com/')
+                .then(function (response) {
+                    expect(response.body, 'to equal', new Buffer('foobarquux', 'utf-8'));
+                });
+        }, 'with http mocked out', {
+            request: 'GET http://example.com/',
+            response: {
+                headers: {
+                    'Content-Type': 'text/plain',
+                    'Content-Encoding': 'deflate'
+                },
+                unchunkedBody: zlib.deflateSync('foobarquux')
+            }
+        }, 'not to error');
+    });
 });

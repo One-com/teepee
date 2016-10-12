@@ -1250,6 +1250,24 @@ describe('Teepee', function () {
             }, 'not to error');
         });
 
+        it('should not attempt to parse an application/json response body when json: false is passed', function () {
+            return expect(function (cb) {
+                return teepee({url: 'http://localhost:5984/', json: false}).then(function (response) {
+                    expect(response.body, 'to equal', new Buffer('{"foo":123}'));
+                });
+            }, 'with http mocked out', {
+                response: {
+                    statusCode: 200,
+                    headers: {
+                        'Content-Type': 'application/json; charset=utf8'
+                    },
+                    body: {
+                        foo: 123
+                    }
+                }
+            }, 'not to error');
+        });
+
         it('should throw an error on invalid JSON', function () {
             var responseStream = new stream.Readable();
             responseStream._read = function () {

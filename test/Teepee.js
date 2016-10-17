@@ -694,7 +694,7 @@ describe('Teepee', function () {
             var eventEmitter;
             return expect(function (cb) {
                 eventEmitter = teepee('http://localhost/');
-                eventEmitter.on('error', function (err, response) {
+                eventEmitter.on('error', function (err) {
                     expect(err, 'to equal', new Teepee.httpErrors.NotFound());
                     this.on('responseBody', function (response) {
                         expect(response.body, 'to equal', new Buffer('yaddayaddayadda'));

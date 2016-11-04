@@ -567,6 +567,20 @@ describe('Teepee', function () {
         }, 'to call the callback without error');
     });
 
+    it('should prefer an overridden host header to the default when it is not provided as all lowercase', function () {
+        return expect(function () {
+            return teepee({url: 'http://localhost/', headers: {Host: 'baz.com'}});
+        }, 'with http mocked out', {
+            request: {
+                url: 'GET http://localhost/',
+                headers: {
+                    host: 'baz.com'
+                }
+            },
+            response: 200
+        }, 'not to error');
+    });
+
     it('should allow specifying the request body as a Buffer', function () {
         return expect(function (cb) {
             new Teepee('http://localhost:5984/').request({ method: 'POST', path: 'foo', body: new Buffer([1, 2, 3]) }, cb);

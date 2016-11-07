@@ -138,6 +138,10 @@ describe('Teepee', function () {
         ], 'not to error');
     });
 
+    it('should inherit the _userSuppliedConfigOptionNames of the parent (so Agents will be created correctly)', function () {
+        expect(new Teepee({foo: 12, bar: 34}).subsidiary({bar: 56, baz: 78})._userSuppliedConfigOptionNames, 'when sorted to equal', ['bar', 'baz', 'foo']);
+    });
+
     it('should not overwrite a built-in method with a config object property', function () {
         expect(new Teepee({
             url: 'http://localhost',

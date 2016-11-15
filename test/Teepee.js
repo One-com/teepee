@@ -13,11 +13,11 @@ var Teepee = require('../lib/Teepee'),
     http = require('http'),
     https = require('https'),
     stream = require('stream'),
-    pathModule = require('path');
+    pathModule = require('path'),
+    httpception = require('httpception');
 
 describe('Teepee', function () {
     var expect = unexpected.clone()
-        .use(require('unexpected-mitm'))
         .use(require('unexpected-sinon'));
 
     var sandbox;
@@ -30,112 +30,111 @@ describe('Teepee', function () {
 
     describe('request shorthands named after the method', function () {
         it('should allow making a POST request via Teepee.post(<string>)', function () {
-            return expect(function () {
-                return Teepee.post('http://www.example.com/');
-            }, 'with http mocked out', {
+            httpception({
                 request: 'POST http://www.example.com/',
                 response: 200
-            }, 'not to error');
+            });
+
+            return Teepee.post('http://www.example.com/');
         });
 
         it('should allow making a POST request via Teepee.post({ url: <string> })', function () {
-            return expect(function () {
-                return Teepee.post({ url: 'http://www.example.com/' });
-            }, 'with http mocked out', {
+            httpception({
                 request: 'POST http://www.example.com/',
                 response: 200
-            }, 'not to error');
+            });
+
+            return Teepee.post({ url: 'http://www.example.com/' });
         });
 
         it('should alias Teepee.delete as Teepee.del', function () {
-            return expect(function () {
-                return Teepee.del('http://www.example.com/');
-            }, 'with http mocked out', {
+            httpception({
                 request: 'DELETE http://www.example.com/',
                 response: 200
-            }, 'not to error');
+            });
+
+            return Teepee.del('http://www.example.com/');
         });
 
         it('should throw if attempting to pass non-string, non-object to Teepee.post()', function () {
+            httpception([]);
+
             return expect(function () {
                 return Teepee.post(1234);
-            }, 'with http mocked out', [], 'to throw', 'Teepee.post: First argument must be either an object or a string');
+            }, 'to throw', 'Teepee.post: First argument must be either an object or a string');
         });
 
         it('should allow making a POST request via new Teepee().post(<string>)', function () {
-            return expect(function () {
-                return new Teepee().post('http://www.example.com/');
-            }, 'with http mocked out', {
+            httpception({
                 request: 'POST http://www.example.com/',
                 response: 200
-            }, 'not to error');
+            });
+
+            return new Teepee().post('http://www.example.com/');
         });
 
         it('should allow making a POST request via new Teepee().post({ url: <string> })', function () {
-            return expect(function () {
-                return new Teepee().post({ url: 'http://www.example.com/' });
-            }, 'with http mocked out', {
+            httpception({
                 request: 'POST http://www.example.com/',
                 response: 200
-            }, 'not to error');
+            });
+
+            return new Teepee().post({ url: 'http://www.example.com/' });
         });
 
         it('should allow making a POST request via new Teepee(<url>).post()', function () {
-            return expect(function () {
-                return new Teepee('http://www.example.com/').post();
-            }, 'with http mocked out', {
+            httpception({
                 request: 'POST http://www.example.com/',
                 response: 200
-            }, 'not to error');
+            });
+
+            return new Teepee('http://www.example.com/').post();
         });
 
         it('should allow making a POST request via new Teepee(<url>).post(<function>)', function () {
-            return expect(function (cb) {
-                new Teepee('http://www.example.com/').post(cb);
-            }, 'with http mocked out', {
+            httpception({
                 request: 'POST http://www.example.com/',
                 response: 200
+            });
+
+            return expect(function (cb) {
+                new Teepee('http://www.example.com/').post(cb);
             }, 'to call the callback without error');
         });
 
         it('should alias Teepee.prototype.delete as Teepee.prototype.del', function () {
-            return expect(function () {
-                return new Teepee().del('http://www.example.com/');
-            }, 'with http mocked out', {
+            httpception({
                 request: 'DELETE http://www.example.com/',
                 response: 200
-            }, 'not to error');
+            });
+            return new Teepee().del('http://www.example.com/');
         });
 
         it('should throw if attempting to pass non-string, non-object to Teepee.post()', function () {
+            httpception([]);
+
             return expect(function () {
                 return new Teepee('http://www.example.com/').post(1234);
-            }, 'with http mocked out', [], 'to throw', 'Teepee.post: First argument must be either an object or a string');
+            }, 'to throw', 'Teepee.post: First argument must be either an object or a string');
         });
     });
 
     it('should allow specifying a default query to the constructor', function () {
-        return expect(function () {
-            return new Teepee({query: {foo: 123}}).get('http://www.google.com/');
-        }, 'with http mocked out', [
-            { request: 'GET http://www.google.com/?foo=123', response: 200 }
-        ], 'not to error');
+        httpception({ request: 'GET http://www.google.com/?foo=123', response: 200 });
+
+        return new Teepee({query: {foo: 123}}).get('http://www.google.com/');
     });
 
     it('should override the default query when passing a conflicting option to request', function () {
-        return expect(function () {
-            return new Teepee({query: {foo: 123}}).get({url: 'http://www.google.com/', query: {foo: 456}});
-        }, 'with http mocked out', [
-            { request: 'GET http://www.google.com/?foo=456', response: 200 }
-        ], 'not to error');
+        httpception({ request: 'GET http://www.google.com/?foo=456', response: 200 });
+
+        return new Teepee({query: {foo: 123}}).get({url: 'http://www.google.com/', query: {foo: 456}});
     });
 
     it('should mix into the default query when creating a subsidiary', function () {
-        return expect(function () {
-            return new Teepee({query: {foo: 123}}).subsidiary({query: {bar: 789}}).get('http://www.google.com/');
-        }, 'with http mocked out', [
-            { request: 'GET http://www.google.com/?bar=789&foo=123', response: 200 }
-        ], 'not to error');
+        httpception({ request: 'GET http://www.google.com/?bar=789&foo=123', response: 200 });
+
+        return new Teepee({query: {foo: 123}}).subsidiary({query: {bar: 789}}).get('http://www.google.com/');
     });
 
     it('should inherit the _userSuppliedConfigOptionNames of the parent (so Agents will be created correctly)', function () {
@@ -150,18 +149,16 @@ describe('Teepee', function () {
     });
 
     it('should assume http:// if no protocol is provided in the base url', function () {
-        return expect(function () {
-            return new Teepee('localhost:1234').request('foobar');
-        }, 'with http mocked out', {
+        httpception({
             request: 'GET http://localhost:1234/foobar',
             response: 200
-        }, 'not to error');
+        });
+
+        return new Teepee('localhost:1234').request('foobar');
     });
 
     it('should accept a url without a hostname (will default to localhost via http.request)', function () {
-        return expect(function () {
-            return new Teepee('http://:1234').request('foobar');
-        }, 'with http mocked out', {
+        httpception({
             request: {
                 url: 'GET http://localhost:1234/foobar',
                 headers: {
@@ -169,15 +166,19 @@ describe('Teepee', function () {
                 }
             },
             response: 200
-        }, 'not to error');
+        });
+
+        return new Teepee('http://:1234').request('foobar');
     });
 
     it('should provide the response body as response.body and as the second parameter to the callback', function () {
-        return expect(function (cb) {
-            new Teepee('localhost:1234').request('foobar', cb);
-        }, 'with http mocked out', {
+        httpception({
             request: 'GET http://localhost:1234/foobar',
             response: { statusCode: 200, body: new Buffer('foo') }
+        });
+
+        return expect(function (cb) {
+            new Teepee('localhost:1234').request('foobar', cb);
         }, 'to call the callback without error').spread(function (response, body) {
             expect(response, 'to have property', 'body', new Buffer('foo'));
             expect(body, 'to equal', new Buffer('foo'));
@@ -185,11 +186,13 @@ describe('Teepee', function () {
     });
 
     it('should provide an empty buffer if the the response body is empty', function () {
-        return expect(function (cb) {
-            new Teepee('localhost:1234').request('foobar', cb);
-        }, 'with http mocked out', {
+        httpception({
             request: 'GET http://localhost:1234/foobar',
             response: { statusCode: 200 }
+        });
+
+        return expect(function (cb) {
+            new Teepee('localhost:1234').request('foobar', cb);
         }, 'to call the callback without error').spread(function (response, body) {
             expect(response, 'to have property', 'body', new Buffer([]));
             expect(body, 'to equal', new Buffer([]));
@@ -197,6 +200,15 @@ describe('Teepee', function () {
     });
 
     it('should accept default headers as constructor options', function () {
+        httpception({
+            request: {
+                headers: {
+                    foo: 'blah',
+                    quux: 'baz'
+                }
+            }
+        });
+
         return expect(function (cb) {
             new Teepee({
                 url: 'http://localhost:1234/',
@@ -209,17 +221,16 @@ describe('Teepee', function () {
                     foo: 'blah'
                 }
             }, cb);
-        }, 'with http mocked out', {
-            request: {
-                headers: {
-                    foo: 'blah',
-                    quux: 'baz'
-                }
-            }
         }, 'to call the callback without error');
     });
 
     it('should ignore headers values of undefined', function () {
+        httpception({
+            request: {
+                headers: expect.it('not to have property', 'content-type')
+            }
+        });
+
         var undefinedVariable;
         return expect(function (cb) {
             new Teepee({
@@ -228,14 +239,14 @@ describe('Teepee', function () {
                     'content-type': undefinedVariable
                 }
             }).request(cb);
-        }, 'with http mocked out', {
-            request: {
-                headers: expect.it('not to have property', 'content-type')
-            }
         }, 'to call the callback without error');
     });
 
     it('should emit a successfulRequest event on 200 OK response', function () {
+        httpception({
+            response: 200
+        });
+
         var teepee = new Teepee('http://localhost:1234/'),
             successfulRequestListener = sinon.spy().named('successfulRequestListener'),
             failedRequestListener = sinon.spy().named('failedRequestListener');
@@ -243,8 +254,6 @@ describe('Teepee', function () {
             .on('failedRequest', failedRequestListener);
         return expect(function (cb) {
             teepee.request(cb);
-        }, 'with http mocked out', {
-            response: 200
         }, 'to call the callback without error').then(function () {
             expect([ failedRequestListener, successfulRequestListener ], 'to have calls satisfying', function () {
                 successfulRequestListener({
@@ -261,6 +270,11 @@ describe('Teepee', function () {
     });
 
     it('should emit a successfulRequest event on 304 Not Modified response', function () {
+        httpception({
+            response: 304,
+            body: 'barbar'
+        });
+
         return expect(function (cb) {
             var teepee = new Teepee('http://localhost:1234/');
             var successfulRequestListener = sinon.spy(function () {
@@ -268,13 +282,15 @@ describe('Teepee', function () {
             }).named('successfulRequestListener');
             teepee.on('successfulRequest', successfulRequestListener);
             teepee.request('/foo.jpg');
-        }, 'with http mocked out', {
-            response: 304,
-            body: 'barbar'
         }, 'to call the callback without error');
     });
 
     it('should emit a successfulRequest event on 200 Ok response without callback but with responseBody event handler', function () {
+        httpception({
+            response: 200,
+            body: 'barbar'
+        });
+
         return expect(function (cb) {
             var teepee = new Teepee('http://localhost:1234/');
             var successfulRequestListener = sinon.spy(function () {
@@ -285,13 +301,15 @@ describe('Teepee', function () {
             var request = teepee.request('/foo.jpg');
 
             request.once('responseBody', function () {});
-        }, 'with http mocked out', {
-            response: 200,
-            body: 'barbar'
         }, 'to call the callback without error');
     });
 
     it('should emit a successfulRequest event on 200 Ok response without callback and without responseBody event handler', function () {
+        httpception({
+            response: 200,
+            body: 'barbar'
+        });
+
         return expect(function (cb) {
             var teepee = new Teepee('http://localhost:1234/');
             var successfulRequestListener = sinon.spy(function () {
@@ -300,22 +318,21 @@ describe('Teepee', function () {
             teepee.on('successfulRequest', successfulRequestListener);
 
             teepee.request('/foo.jpg');
-        }, 'with http mocked out', {
-            response: 200,
-            body: 'barbar'
         }, 'to call the callback without error');
     });
 
     it('should emit a request event', function () {
+        httpception([
+            { response: new SocketError.ECONNRESET() },
+            { response: 200 }
+        ]);
+
         var teepee = new Teepee('http://localhost:1234/'),
             requestListener = sinon.spy().named('requestListener');
         teepee.on('request', requestListener);
         return expect(function (cb) {
             teepee.request({ numRetries: 1 }, cb);
-        }, 'with http mocked out', [
-            { response: new SocketError.ECONNRESET() },
-            { response: 200 }
-        ], 'to call the callback without error').then(function () {
+        }, 'to call the callback without error').then(function () {
             expect(requestListener, 'was called twice').and('was always called with exactly', {
                 url: 'http://localhost:1234/',
                 requestOptions: {
@@ -329,6 +346,10 @@ describe('Teepee', function () {
     });
 
     it('should emit a failedRequest event', function () {
+        httpception({
+            response: 404
+        });
+
         var teepee = new Teepee('http://localhost:1234/'),
             successfulRequestListener = sinon.spy().named('successfulRequestListner'),
             failedRequestListener = sinon.spy().named('failedRequestListener');
@@ -336,8 +357,6 @@ describe('Teepee', function () {
         teepee.on('successfulRequest', successfulRequestListener);
         return expect(function (cb) {
             teepee.request(cb);
-        }, 'with http mocked out', {
-            response: 404
         }, 'to call the callback with error', new HttpError.NotFound()).then(function () {
             expect([ successfulRequestListener, failedRequestListener ], 'to have calls satisfying', function () {
                 failedRequestListener({
@@ -359,13 +378,15 @@ describe('Teepee', function () {
         describe('passed to the constructor', function () {
             // Teepee does pass the option, but it seems like there's a mitm problem that causes this test to fail?
             it.skip('should pass option to https.request', function () {
-                return expect(function (cb) {
-                    new Teepee({ rejectUnauthorized: false, url: 'https://localhost:1234/' }).request(cb);
-                }, 'with http mocked out', {
+                httpception({
                     request: {
                         rejectUnauthorized: false
                     },
                     response: 200
+                });
+
+                return expect(function (cb) {
+                    new Teepee({ rejectUnauthorized: false, url: 'https://localhost:1234/' }).request(cb);
                 }, 'to call the callback without error');
             });
         });
@@ -373,13 +394,15 @@ describe('Teepee', function () {
         describe('passed to the request method', function () {
             // Teepee does pass the option, but it seems like there's a mitm problem that causes this test to fail?
             it.skip('should pass the option to https.request', function () {
-                return expect(function (cb) {
-                    new Teepee('https://localhost:1234/').request({ rejectUnauthorized: false }, cb);
-                }, 'with http mocked out', {
+                httpception({
                     request: {
                         rejectUnauthorized: false
                     },
                     response: 200
+                });
+
+                return expect(function (cb) {
+                    new Teepee('https://localhost:1234/').request({ rejectUnauthorized: false }, cb);
                 }, 'to call the callback without error');
             });
         });
@@ -387,18 +410,25 @@ describe('Teepee', function () {
 
     describe('without a rejectUnauthorized option', function () {
         it('should not send a value to https.request, thus triggering whatever is the default behavior', function () {
-            return expect(function (cb) {
-                new Teepee('https://localhost:1234/').request(cb);
-            }, 'with http mocked out', {
+            httpception({
                 request: {
                     rejectUnauthorized: undefined
                 },
                 response: 200
+            });
+
+            return expect(function (cb) {
+                new Teepee('https://localhost:1234/').request(cb);
             }, 'to call the callback without error');
         });
     });
 
     it('should accept a custom agent', function () {
+        httpception({
+            request: 'http://localhost:5984/hey/quux',
+            response: 200
+        });
+
         var agent;
         return expect(function (cb) {
             agent = new http.Agent();
@@ -413,15 +443,17 @@ describe('Teepee', function () {
             sinon.spy(agent, 'addRequest');
 
             teepee.request('quux', cb);
-        }, 'with http mocked out', {
-            request: 'http://localhost:5984/hey/quux',
-            response: 200
         }, 'to call the callback').then(function () {
             expect(agent.addRequest, 'was called once');
         });
     });
 
     it('should accept a custom agent constructor', function () {
+        httpception({
+            request: 'http://localhost:5984/hey/quux',
+            response: 200
+        });
+
         var Agent = function (options) {
             http.Agent.call(this, options);
             sinon.spy(this, 'addRequest');
@@ -435,9 +467,6 @@ describe('Teepee', function () {
             });
 
             teepee.request('quux', cb);
-        }, 'with http mocked out', {
-            request: 'http://localhost:5984/hey/quux',
-            response: 200
         }, 'to call the callback').then(function () {
             expect(teepee.agentByProtocol.http, 'to be an', Agent);
             expect(teepee.agentByProtocol.http.addRequest, 'was called once');
@@ -445,6 +474,17 @@ describe('Teepee', function () {
     });
 
     it('should accept a custom AgentByProtocol object', function () {
+        httpception([
+            {
+                request: 'http://localhost:5984/hey/quux',
+                response: 200
+            },
+            {
+                request: 'https://example.com/',
+                response: 200
+            }
+        ]);
+
         var CustomHttpAgent = function (options) {
             http.Agent.call(this, options);
             sinon.spy(this, 'addRequest');
@@ -467,16 +507,7 @@ describe('Teepee', function () {
             return teepee.request('quux').then(function () {
                 return teepee.request('https://example.com/');
             });
-        }, 'with http mocked out', [
-            {
-                request: 'http://localhost:5984/hey/quux',
-                response: 200
-            },
-            {
-                request: 'https://example.com/',
-                response: 200
-            }
-        ], 'not to error').then(function () {
+        }, 'not to error').then(function () {
             expect(teepee.agentByProtocol.http, 'to be a', CustomHttpAgent);
             expect(teepee.agentByProtocol.http.addRequest, 'was called once');
             expect(teepee.agentByProtocol.https, 'to be a', CustomHttpsAgent);
@@ -507,57 +538,65 @@ describe('Teepee', function () {
     });
 
     it('should perform a simple request', function () {
-        return expect(function (cb) {
-            new Teepee('http://localhost:5984').request('bar/quux', cb);
-        }, 'with http mocked out', {
+        httpception({
             request: 'GET http://localhost:5984/bar/quux',
             response: 200
+        });
+
+        return expect(function (cb) {
+            new Teepee('http://localhost:5984').request('bar/quux', cb);
         }, 'to call the callback without error');
     });
 
     it('should allow the options object to be omitted', function () {
-        return expect(function (cb) {
-            new Teepee('http://localhost:5984').request(cb);
-        }, 'with http mocked out', {
+        httpception({
             request: 'GET http://localhost:5984/',
             response: 200
+        });
+
+        return expect(function (cb) {
+            new Teepee('http://localhost:5984').request(cb);
         }, 'to call the callback without error');
     });
 
     it('should accept the method before the url', function () {
-        return expect(function (cb) {
-            new Teepee('http://localhost:5984').request('POST bar/quux', cb);
-        }, 'with http mocked out', {
+        httpception({
             request: 'POST http://localhost:5984/bar/quux',
             response: 200
+        });
+
+        return expect(function (cb) {
+            new Teepee('http://localhost:5984').request('POST bar/quux', cb);
         }, 'to call the callback without error');
     });
 
     it('should allow specifying custom headers', function () {
-        return expect(function (cb) {
-            new Teepee('http://localhost:5984').request({ path: 'bar/quux', headers: { Foo: 'bar' } }, cb);
-        }, 'with http mocked out', {
+        httpception({
             request: {
                 url: 'GET http://localhost:5984/bar/quux',
                 headers: { Foo: 'bar' }
             },
             response: 200
+        });
+
+        return expect(function (cb) {
+            new Teepee('http://localhost:5984').request({ path: 'bar/quux', headers: { Foo: 'bar' } }, cb);
         }, 'to call the callback without error');
     });
 
     it('should resolve the path from the base url', function () {
-        return expect(function (cb) {
-            new Teepee('http://localhost:5984/hey/there/').request({ path: '../quux' }, cb);
-        }, 'with http mocked out', {
+        httpception({
             request: 'GET http://localhost:5984/hey/quux',
             response: 200
+        });
+
+        return expect(function (cb) {
+            new Teepee('http://localhost:5984/hey/there/').request({ path: '../quux' }, cb);
         }, 'to call the callback without error');
     });
 
     it('should default to port 443 on https', function () {
-        return expect(function (cb) {
-            new Teepee('https://localhost/').request('bar/quux', cb);
-        }, 'with http mocked out', {
+        httpception({
             request: {
                 url: 'GET https://localhost:443/bar/quux',
                 port: 443,
@@ -568,13 +607,15 @@ describe('Teepee', function () {
                 }
             },
             response: 200
+        });
+
+        return expect(function (cb) {
+            new Teepee('https://localhost/').request('bar/quux', cb);
         }, 'to call the callback without error');
     });
 
     it('should prefer an overridden host header to the default when it is not provided as all lowercase', function () {
-        return expect(function () {
-            return teepee({url: 'http://localhost/', headers: {Host: 'baz.com'}});
-        }, 'with http mocked out', {
+        httpception({
             request: {
                 url: 'GET http://localhost/',
                 headers: {
@@ -582,13 +623,15 @@ describe('Teepee', function () {
                 }
             },
             response: 200
+        });
+
+        return expect(function () {
+            return teepee({url: 'http://localhost/', headers: {Host: 'baz.com'}});
         }, 'not to error');
     });
 
     it('should allow specifying the request body as a Buffer', function () {
-        return expect(function (cb) {
-            new Teepee('http://localhost:5984/').request({ method: 'POST', path: 'foo', body: new Buffer([1, 2, 3]) }, cb);
-        }, 'with http mocked out', {
+        httpception({
             request: {
                 url: 'POST http://localhost:5984/foo',
                 headers: {
@@ -597,13 +640,15 @@ describe('Teepee', function () {
                 body: new Buffer([1, 2, 3])
             },
             response: 200
+        });
+
+        return expect(function (cb) {
+            new Teepee('http://localhost:5984/').request({ method: 'POST', path: 'foo', body: new Buffer([1, 2, 3]) }, cb);
         }, 'to call the callback without error');
     });
 
     it('should allow specifying the request body as a string', function () {
-        return expect(function (cb) {
-            new Teepee('http://localhost:5984/').request({ method: 'POST', path: 'foo', body: 'foobar' }, cb);
-        }, 'with http mocked out', {
+        httpception({
             request: {
                 url: 'POST http://localhost:5984/foo',
                 headers: {
@@ -612,14 +657,16 @@ describe('Teepee', function () {
                 body: new Buffer('foobar', 'utf-8')
             },
             response: 200
+        });
+
+        return expect(function (cb) {
+            new Teepee('http://localhost:5984/').request({ method: 'POST', path: 'foo', body: 'foobar' }, cb);
         }, 'to call the callback without error');
     });
 
     describe('when specifying the request body as an object', function () {
         it('should send a JSON request', function () {
-            return expect(function () {
-                return new Teepee('http://localhost:5984/').request({ method: 'POST', path: 'foo', body: { what: 'gives' } });
-            }, 'with http mocked out', {
+            httpception({
                 request: {
                     url: 'POST http://localhost:5984/foo',
                     headers: {
@@ -628,13 +675,15 @@ describe('Teepee', function () {
                     body: { what: 'gives' }
                 },
                 response: 200
+            });
+
+            return expect(function () {
+                return new Teepee('http://localhost:5984/').request({ method: 'POST', path: 'foo', body: { what: 'gives' } });
             }, 'not to error');
         });
 
         it('should not overwrite an existing Content-Type header', function () {
-            return expect(function () {
-                return new Teepee('http://localhost:5984/').request({ method: 'POST', headers: {'content-type': 'application/vnd.api+json'}, body: { what: 'gives' } });
-            }, 'with http mocked out', {
+            httpception({
                 request: {
                     url: 'POST http://localhost:5984/',
                     headers: {
@@ -643,36 +692,48 @@ describe('Teepee', function () {
                     body: { what: 'gives' }
                 },
                 response: 200
+            });
+
+            return expect(function () {
+                return new Teepee('http://localhost:5984/').request({ method: 'POST', headers: {'content-type': 'application/vnd.api+json'}, body: { what: 'gives' } });
             }, 'not to error');
         });
     });
 
     it('should return an object with an abort method', function () {
+        httpception({
+            response: 200
+        });
+
         return expect(function (cb) {
             expect(new Teepee('http://localhost:5984/').request({ method: 'POST', path: 'foo' }, cb), 'to satisfy', {
                 abort: expect.it('to be a function')
             });
-        }, 'with http mocked out', {
-            response: 200
         }, 'to call the callback without error');
     });
 
     it('should emit a responseBody event when the response body is available', function () {
+        httpception({
+            response: {
+                statusCode: 200,
+                body: 'yaddayaddayadda'
+            }
+        });
+
         return expect(function (cb) {
             teepee('http://localhost/').on('responseBody', function (response) {
                 expect(response.body, 'to equal', new Buffer('yaddayaddayadda'));
                 cb();
             }).on('error', cb);
-        }, 'with http mocked out', {
-            response: {
-                statusCode: 200,
-                body: 'yaddayaddayadda'
-            }
         }, 'to call the callback without error');
     });
 
     describe('#request', function () {
         it('should return an EventEmitter that emits a request event', function () {
+            httpception({
+                response: 200
+            });
+
             return expect(function (cb) {
                 teepee('http://localhost/').on('request', function (request, requestProperties, url) {
                     expect(request, 'to satisfy', {
@@ -685,12 +746,17 @@ describe('Teepee', function () {
                         cb();
                     }).on('error', cb);
                 });
-            }, 'with http mocked out', {
-                response: 200
             }, 'to call the callback without error');
         });
 
         it('should return an EventEmitter that does not emit the responseBody event unless there are listeners for it', function () {
+            httpception({
+                response: {
+                    statusCode: 200,
+                    body: 'yaddayaddayadda'
+                }
+            });
+
             var eventEmitter;
             return expect(function (cb) {
                 eventEmitter = teepee('http://localhost/');
@@ -698,17 +764,19 @@ describe('Teepee', function () {
                     response.on('data', function () {}).on('end', cb);
                 });
                 sinon.spy(eventEmitter, 'emit');
-            }, 'with http mocked out', {
-                response: {
-                    statusCode: 200,
-                    body: 'yaddayaddayadda'
-                }
             }, 'to call the callback without error').then(function () {
                 expect(eventEmitter.emit, 'was never called with', 'responseBody');
             });
         });
 
         it('should return an EventEmitter that emits an error when an unsuccessful response is received, just in time for a responseBody listener to be attached', function () {
+            httpception({
+                response: {
+                    statusCode: 404,
+                    body: 'yaddayaddayadda'
+                }
+            });
+
             var eventEmitter;
             return expect(function (cb) {
                 eventEmitter = teepee('http://localhost/');
@@ -720,11 +788,6 @@ describe('Teepee', function () {
                     });
                 });
                 sinon.spy(eventEmitter, 'emit');
-            }, 'with http mocked out', {
-                response: {
-                    statusCode: 404,
-                    body: 'yaddayaddayadda'
-                }
             }, 'to call the callback without error').then(function () {
                 expect(eventEmitter.emit, 'to have calls satisfying', function () {
                     eventEmitter.emit('response', expect.it('to be an object'), new Teepee.httpErrors.NotFound());
@@ -735,12 +798,14 @@ describe('Teepee', function () {
         });
 
         it('should return an EventEmitter that emits a success event (and no error event) when a successful response is received', function () {
+            httpception({
+                response: 200
+            });
+
             var eventEmitter;
             return expect(function (cb) {
                 eventEmitter = teepee('http://localhost/', cb);
                 sinon.spy(eventEmitter, 'emit');
-            }, 'with http mocked out', {
-                response: 200
             }, 'to call the callback without error').then(function () {
                 expect(eventEmitter.emit, 'to have calls satisfying', function () {
                     eventEmitter.emit('response', expect.it('to be an object'), undefined);
@@ -752,16 +817,25 @@ describe('Teepee', function () {
         });
 
         it('should discard a document fragment in the url', function () {
-            return expect(function () {
-                return teepee('http://foo.com/#blah');
-            }, 'with http mocked out', {
+            httpception({
                 request: 'http://foo.com/',
                 response: 200
+            });
+
+            return expect(function () {
+                return teepee('http://foo.com/#blah');
             }, 'not to error');
         });
 
         describe('when the body is passed as a function', function () {
             it('should support a Buffer being returned', function () {
+                httpception({
+                    request: {
+                        url: 'PUT http://localhost/',
+                        body: new Buffer('hello')
+                    }
+                });
+
                 return expect(function () {
                     return teepee({
                         url: 'PUT http://localhost/',
@@ -769,48 +843,33 @@ describe('Teepee', function () {
                             return new Buffer('hello');
                         }
                     });
-                }, 'with http mocked out', {
-                    request: {
-                        url: 'PUT http://localhost/',
-                        body: new Buffer('hello')
-                    }
                 }, 'not to error');
             });
 
             describe('when a stream is returned', function () {
                 it('should send a single request', function () {
-                    return expect(function () {
-                        return teepee({
-                            url: 'PUT http://localhost/',
-                            headers: {
-                                'Content-Type': 'text/plain; charset=UTF-8'
-                            },
-                            body: function () {
-                                return fs.createReadStream(pathModule.resolve(__dirname, '..', 'LICENSE'));
-                            }
-                        });
-                    }, 'with http mocked out', {
+                    httpception({
                         request: {
                             url: 'PUT http://localhost/',
                             body: /^Copyright/
                         }
-                    }, 'not to error');
-                });
+                    });
 
-                it('should support retrying', function () {
                     return expect(function () {
                         return teepee({
                             url: 'PUT http://localhost/',
                             headers: {
                                 'Content-Type': 'text/plain; charset=UTF-8'
                             },
-                            numRetries: 1,
-                            retry: '504',
                             body: function () {
                                 return fs.createReadStream(pathModule.resolve(__dirname, '..', 'LICENSE'));
                             }
                         });
-                    }, 'with http mocked out', [
+                    }, 'not to error');
+                });
+
+                it('should support retrying', function () {
+                    httpception([
                         {
                             request: {
                                 url: 'PUT http://localhost/',
@@ -825,36 +884,52 @@ describe('Teepee', function () {
                             },
                             response: 200
                         }
-                    ], 'not to error');
+                    ]);
+
+                    return teepee({
+                        url: 'PUT http://localhost/',
+                        headers: {
+                            'Content-Type': 'text/plain; charset=UTF-8'
+                        },
+                        numRetries: 1,
+                        retry: '504',
+                        body: function () {
+                            return fs.createReadStream(pathModule.resolve(__dirname, '..', 'LICENSE'));
+                        }
+                    });
                 });
             });
         });
 
         describe('when the return value is used as a thenable', function () {
             it('should succeed', function () {
-                return expect(function () {
-                    return teepee('http://localhost/');
-                }, 'with http mocked out', {
+                httpception({
                     request: 'GET http://localhost/',
                     response: 200
-                }, 'not to error');
+                });
+
+                return teepee('http://localhost/');
             });
 
             it('should fail', function () {
-                return expect(function () {
-                    return teepee('http://localhost/');
-                }, 'with http mocked out', {
+                httpception({
                     request: 'GET http://localhost/',
                     response: 404
+                });
+
+                return expect(function () {
+                    return teepee('http://localhost/');
                 }, 'to error', new HttpError.NotFound());
             });
         });
 
         it('should instantiate an HttpError error if an unmapped status code is returned from the server', function () {
+            httpception({
+                response: 598
+            });
+
             return expect(function () {
                 return teepee('http://foo.com/');
-            }, 'with http mocked out', {
-                response: 598
             }, 'to error', new HttpError(598));
         });
     });
@@ -887,22 +962,26 @@ describe('Teepee', function () {
 
     describe('retrying on failure', function () {
         it('should return a successful response when a failed GET is retried `numRetries` times with a successful last attempt', function () {
-            return expect(function (cb) {
-                new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2 }, cb);
-            }, 'with http mocked out', [
+            httpception([
                 { response: new SocketError.ETIMEDOUT() },
                 { response: new SocketError.ETIMEDOUT() },
                 { response: 200 }
-            ], 'to call the callback without error');
+            ]);
+
+            return expect(function (cb) {
+                new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2 }, cb);
+            }, 'to call the callback without error');
         });
 
         it('should return the response associated with the eventually successful request', function () {
-            return expect(function (cb) {
-                new Teepee('http://localhost:5984/').request({ numRetries: 2, retry: 504 }, cb);
-            }, 'with http mocked out', [
+            httpception([
                 { response: { statusCode: 504, headers: { Foo: 'bar' }, body: new Buffer('foo') } },
                 { response: { statusCode: 200, headers: { Foo: 'quux' }, body: new Buffer('quux') } }
-            ], 'to call the callback without error').spread(function (response, body) {
+            ]);
+
+            return expect(function (cb) {
+                new Teepee('http://localhost:5984/').request({ numRetries: 2, retry: 504 }, cb);
+            }, 'to call the callback without error').spread(function (response, body) {
                 expect(response.body, 'to equal', new Buffer('quux'));
                 expect(response.headers.foo, 'to equal', 'quux');
                 expect(body, 'to equal', new Buffer('quux'));
@@ -910,11 +989,11 @@ describe('Teepee', function () {
         });
 
         it('should not retry a request that receives a response if the specific status code is not listed in the retry array', function () {
+            httpception({ response: 503 });
+
             return expect(function (cb) {
                 new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2 }, cb);
-            }, 'with http mocked out', [
-                { response: 503 }
-            ], 'to call the callback with error', new HttpError.ServiceUnavailable());
+            }, 'to call the callback with error', new HttpError.ServiceUnavailable());
         });
 
         it('should retry a request that times out while buffering up the response', function () {
@@ -943,6 +1022,12 @@ describe('Teepee', function () {
         });
 
         it('should emit a retriedRequest every time a request is retried', function () {
+            httpception([
+                { response: new SocketError.ETIMEDOUT() },
+                { response: 501 },
+                { response: 200 }
+            ]);
+
             var teepee = new Teepee('http://localhost:1234/'),
                 successfulRequestListener = sinon.spy().named('successfulRequestListener'),
                 failedRequestListener = sinon.spy().named('failedRequestListener'),
@@ -953,11 +1038,7 @@ describe('Teepee', function () {
                 .on('retriedRequest', retriedRequestListener);
             return expect(function (cb) {
                 teepee.request({ path: 'foo', numRetries: 2, retry: [ 501 ] }, cb);
-            }, 'with http mocked out', [
-                { response: new SocketError.ETIMEDOUT() },
-                { response: 501 },
-                { response: 200 }
-            ], 'to call the callback without error').then(function () {
+            }, 'to call the callback without error').then(function () {
                 expect([ failedRequestListener, successfulRequestListener, retriedRequestListener ], 'to have calls satisfying', function () {
                     retriedRequestListener({
                         numRetriesLeft: 1,
@@ -975,21 +1056,25 @@ describe('Teepee', function () {
         });
 
         it('should give up if the request fails 1 + `numRetries` times', function () {
-            return expect(function (cb) {
-                new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2 }, cb);
-            }, 'with http mocked out', [
+            httpception([
                 { response: new SocketError.ETIMEDOUT() },
                 { response: new SocketError.ETIMEDOUT() },
                 { response: new SocketError.ETIMEDOUT() }
-            ], 'to call the callback with error', new SocketError.ETIMEDOUT());
+            ]);
+
+            return expect(function (cb) {
+                new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2 }, cb);
+            }, 'to call the callback with error', new SocketError.ETIMEDOUT());
         });
 
         it('should not attempt to retry a request with the body given as a stream, despite a `numRetries` setting', function () {
+            httpception({
+                response: new SocketError.ETIMEDOUT()
+            });
+
             return expect(function (cb) {
                 new Teepee('http://localhost:5984/')
                     .request({ method: 'POST', body: fs.createReadStream(pathModule.resolve(__dirname, '..', 'testdata', '0byte')), path: 'foo', numRetries: 2 }, cb);
-            }, 'with http mocked out', {
-                response: new SocketError.ETIMEDOUT()
             }, 'to call the callback with error', new SocketError.ETIMEDOUT());
         });
 
@@ -1000,12 +1085,14 @@ describe('Teepee', function () {
 
             describe('when passed to the constructor', function () {
                 it('waits that many milliseconds before retrying', function () {
-                    return expect(function () {
-                        return new Teepee({ url: 'http://localhost:5984/', retryDelayMilliseconds: 3, numRetries: 1 }).request();
-                    }, 'with http mocked out', [
+                    httpception([
                         { response: new SocketError.ETIMEDOUT() },
                         { response: 200 }
-                    ], 'not to error').then(function () {
+                    ]);
+
+                    return expect(function () {
+                        return new Teepee({ url: 'http://localhost:5984/', retryDelayMilliseconds: 3, numRetries: 1 }).request();
+                    }, 'not to error').then(function () {
                         expect(sandbox, 'to have a call satisfying', function () {
                             setTimeout(expect.it('to be a function'), 3);
                         });
@@ -1015,12 +1102,14 @@ describe('Teepee', function () {
 
             describe('when passed to the request function', function () {
                 it('waits that many milliseconds before retrying', function () {
-                    return expect(function (cb) {
-                        return new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 1, retryDelayMilliseconds: 3 });
-                    }, 'with http mocked out', [
+                    httpception([
                         { response: new SocketError.ETIMEDOUT() },
                         { response: 200 }
-                    ], 'not to error').then(function () {
+                    ]);
+
+                    return expect(function (cb) {
+                        return new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 1, retryDelayMilliseconds: 3 });
+                    }, 'not to error').then(function () {
                         expect(setTimeout, 'was called with', expect.it('to be a function'), 3);
                     });
                 });
@@ -1030,16 +1119,20 @@ describe('Teepee', function () {
         describe('with the retry option', function () {
             describe('with an array', function () {
                 it('should retry a non-successful request if the HTTP status code is in the array', function () {
-                    return expect(function (cb) {
-                        new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2, retry: [504] }, cb);
-                    }, 'with http mocked out', [
+                    httpception([
                         { response: 504 },
                         { response: 504 },
                         { response: 200 }
-                    ], 'to call the callback without error');
+                    ]);
+
+                    return expect(function (cb) {
+                        new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2, retry: [504] }, cb);
+                    }, 'to call the callback without error');
                 });
 
                 it('should not retry an unsuccessful request if the HTTP status code is in the array, but there is a request event listener', function () {
+                    httpception({ response: 504 });
+
                     return expect(function (cb) {
                         new Teepee({
                             url: 'http://localhost:5984/',
@@ -1053,71 +1146,79 @@ describe('Teepee', function () {
                         })
                             .request({ path: 'foo', numRetries: 2, retry: [504] }, cb)
                             .on('request', function (request) {});
-                    }, 'with http mocked out', [
-                        { response: 504 }
-                    ], 'to call the callback with error', new HttpError.GatewayTimeout());
+                    }, 'to call the callback with error', new HttpError.GatewayTimeout());
                 });
 
                 it('should not retry an unsuccessful request if the HTTP status code is not in the array', function () {
+                    httpception({ response: 503 });
+
                     return expect(function (cb) {
                         new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2, retry: [504] }, cb);
-                    }, 'with http mocked out', [
-                        { response: 503 }
-                    ], 'to call the callback with error', new HttpError.ServiceUnavailable());
+                    }, 'to call the callback with error', new HttpError.ServiceUnavailable());
                 });
 
                 it('should retry a non-successful request if the HTTP status code is covered by a "wildcard"', function () {
-                    return expect(function (cb) {
-                        new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 4, retry: [ '5xx', '40x' ] }, cb);
-                    }, 'with http mocked out', [
+                    httpception([
                         { response: 404 },
                         { response: 504 },
                         { response: 520 },
                         { response: 412 }
-                    ], 'to call the callback with error', new HttpError.PreconditionFailed());
+                    ]);
+
+                    return expect(function (cb) {
+                        new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 4, retry: [ '5xx', '40x' ] }, cb);
+                    }, 'to call the callback with error', new HttpError.PreconditionFailed());
                 });
 
                 it('should retry an unsuccessful request if "httpError" is in the retry array', function () {
-                    return expect(function (cb) {
-                        new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2, retry: ['httpError'] }, cb);
-                    }, 'with http mocked out', [
+                    httpception([
                         { response: 503 },
                         { response: 200 }
-                    ], 'to call the callback without error');
+                    ]);
+
+                    return expect(function (cb) {
+                        new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2, retry: ['httpError'] }, cb);
+                    }, 'to call the callback without error');
                 });
 
                 it('should retry an unsuccessful request if retry has a value of "httpError"', function () {
-                    return expect(function (cb) {
-                        new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2, retry: ['httpError'] }, cb);
-                    }, 'with http mocked out', [
+                    httpception([
                         { response: 503 },
                         { response: 200 }
-                    ], 'to call the callback without error');
+                    ]);
+
+                    return expect(function (cb) {
+                        new Teepee('http://localhost:5984/').request({ path: 'foo', numRetries: 2, retry: ['httpError'] }, cb);
+                    }, 'to call the callback without error');
                 });
 
                 describe('when retrying on self-redirect is enabled', function () {
                     it('should retry a 301 self-redirect', function () {
-                        return expect(function (cb) {
-                            new Teepee('http://localhost:5984/').request({ numRetries: 1, retry: 'selfRedirect' }, cb);
-                        }, 'with http mocked out', [
+                        httpception([
                             { response: { statusCode: 301, headers: { Location: 'http://localhost:5984/' }, body: new Buffer('hey') } },
                             { response: { statusCode: 200, headers: { Foo: 'quux' }, body: new Buffer('there') } }
-                        ], 'to call the callback without error').spread(function (response, body) {
+                        ]);
+
+                        return expect(function (cb) {
+                            new Teepee('http://localhost:5984/').request({ numRetries: 1, retry: 'selfRedirect' }, cb);
+                        }, 'to call the callback without error').spread(function (response, body) {
                             expect(body, 'to equal', new Buffer('there'));
                             expect(response, 'to have property', 'body', new Buffer('there'));
                         });
                     });
 
                     it('should emit a retry event with a SelfRedirectError', function () {
+                        httpception([
+                            { response: { statusCode: 301, headers: { Location: 'http://localhost:5984/#foo' } } },
+                            { response: 200 }
+                        ]);
+
                         var retriedRequestListener = sinon.spy().named('retriedRequestListener');
                         return expect(function (cb) {
                             var teepee = new Teepee('http://localhost:5984/');
                             teepee.on('retriedRequest', retriedRequestListener);
                             teepee.request({ numRetries: 1, retry: 'selfRedirect' }, cb);
-                        }, 'with http mocked out', [
-                            { response: { statusCode: 301, headers: { Location: 'http://localhost:5984/#foo' } } },
-                            { response: 200 }
-                        ], 'to call the callback without error').then(function () {
+                        }, 'to call the callback without error').then(function () {
                             expect(retriedRequestListener, 'to have calls satisfying', function () {
                                 retriedRequestListener({
                                     url: 'http://localhost:5984/',
@@ -1139,46 +1240,52 @@ describe('Teepee', function () {
                     });
 
                     it('should retry a 302 self-redirect', function () {
-                        return expect(function (cb) {
-                            new Teepee('http://localhost:5984/').request({ numRetries: 1, retry: 'selfRedirect' }, cb);
-                        }, 'with http mocked out', [
+                        httpception([
                             { response: { statusCode: 302, headers: { Location: 'http://localhost:5984/' } } },
                             { response: 200 }
-                        ], 'to call the callback without error');
+                        ]);
+
+                        return expect(function (cb) {
+                            new Teepee('http://localhost:5984/').request({ numRetries: 1, retry: 'selfRedirect' }, cb);
+                        }, 'to call the callback without error');
                     });
 
                     it('should not retry a 303 self-redirect', function () {
+                        httpception({ response: { statusCode: 303, headers: { Location: 'http://localhost:5984/' } } });
+
                         return expect(function (cb) {
                             new Teepee('http://localhost:5984/').request({ numRetries: 1, retry: 'selfRedirect' }, cb);
-                        }, 'with http mocked out', [
-                            { response: { statusCode: 303, headers: { Location: 'http://localhost:5984/' } } }
-                        ], 'to call the callback without error');
+                        }, 'to call the callback without error');
                     });
 
                     it('should retry a 301 self-redirect when the urls are the same', function () {
-                        return expect(function (cb) {
-                            new Teepee('http://localhost:5984/').request({ numRetries: 1, retry: 'selfRedirect' }, cb);
-                        }, 'with http mocked out', [
+                        httpception([
                             { response: { statusCode: 301, headers: { Location: 'http://localhost:5984/' } } },
                             { response: 200 }
-                        ], 'to call the callback without error');
+                        ]);
+
+                        return expect(function (cb) {
+                            new Teepee('http://localhost:5984/').request({ numRetries: 1, retry: 'selfRedirect' }, cb);
+                        }, 'to call the callback without error');
                     });
 
                     it('should retry a 301 self-redirect even when the urls differ by document fragment', function () {
-                        return expect(function (cb) {
-                            new Teepee('http://localhost:5984/#foo').request({ numRetries: 1, retry: 'selfRedirect' }, cb);
-                        }, 'with http mocked out', [
+                        httpception([
                             { response: { statusCode: 301, headers: { Location: 'http://localhost:5984/#bar' } } },
                             { response: 200 }
-                        ], 'to call the callback without error');
+                        ]);
+
+                        return expect(function (cb) {
+                            new Teepee('http://localhost:5984/#foo').request({ numRetries: 1, retry: 'selfRedirect' }, cb);
+                        }, 'to call the callback without error');
                     });
 
                     it('should not fail if an invalid url is received in the Location header', function () {
+                        httpception({ response: { statusCode: 301, headers: { Location: 'vqwe' } } });
+
                         return expect(function (cb) {
                             new Teepee('http://localhost:5984/').request({ numRetries: 1, retry: 'selfRedirect' }, cb);
-                        }, 'with http mocked out', [
-                            { response: { statusCode: 301, headers: { Location: 'vqwe' } } }
-                        ], 'to call the callback without error');
+                        }, 'to call the callback without error');
                     });
                 });
             });
@@ -1186,20 +1293,24 @@ describe('Teepee', function () {
     });
 
     it('should handle ECONNREFUSED', function () {
+        httpception({
+            response: new SocketError.ECONNREFUSED('connect ECONNREFUSED')
+        });
+
         return expect(function (cb) {
             new Teepee('http://localhost:5984/').request('foo', cb);
-        }, 'with http mocked out', {
-            response: new SocketError.ECONNREFUSED('connect ECONNREFUSED')
         }, 'to call the callback with error', new SocketError.ECONNREFUSED('connect ECONNREFUSED'));
     });
 
     it('should handle unknown errors', function () {
         var error = new Error('something else');
 
+        httpception({
+            response: error
+        });
+
         return expect(function (cb) {
             new Teepee('http://localhost:5984/').request('foo', cb);
-        }, 'with http mocked out', {
-            response: error
         }, 'to call the callback with error', new HttpError[500](error.message));
     });
 
@@ -1211,9 +1322,7 @@ describe('Teepee', function () {
                 responseStream.push(null);
             };
 
-            return expect(function (cb) {
-                new Teepee('http://localhost:5984/').request('foo', cb);
-            }, 'with http mocked out', {
+            httpception({
                 request: {
                     url: 'GET http://localhost:5984/foo'
                 },
@@ -1224,6 +1333,10 @@ describe('Teepee', function () {
                     },
                     body: responseStream
                 }
+            });
+
+            return expect(function (cb) {
+                new Teepee('http://localhost:5984/').request('foo', cb);
             }, 'to call the callback without error');
         });
 
@@ -1237,9 +1350,7 @@ describe('Teepee', function () {
                 responseStream.push(null);
             };
 
-            return expect(function (cb) {
-                new Teepee('http://localhost:5984/').request('foo', cb);
-            }, 'with http mocked out', {
+            httpception({
                 request: {
                     url: 'GET http://localhost:5984/foo'
                 },
@@ -1250,30 +1361,30 @@ describe('Teepee', function () {
                     },
                     body: responseStream
                 }
+            });
+
+            return expect(function (cb) {
+                new Teepee('http://localhost:5984/').request('foo', cb);
             }, 'to call the callback without error').spread(function (response, body) {
                 return expect(body, 'to equal', responseObject);
             });
         });
 
         it('should not attempt to parse an application/json response body when the request method is HEAD', function () {
-            return expect(function (cb) {
-                return teepee('HEAD http://localhost:5984/');
-            }, 'with http mocked out', {
+            httpception({
                 response: {
                     statusCode: 200,
                     headers: {
                         'Content-Type': 'application/json; charset=utf8'
                     }
                 }
-            }, 'not to error');
+            });
+
+            return teepee('HEAD http://localhost:5984/');
         });
 
         it('should not attempt to parse an application/json response body when json: false is passed', function () {
-            return expect(function (cb) {
-                return teepee({url: 'http://localhost:5984/', json: false}).then(function (response) {
-                    expect(response.body, 'to equal', new Buffer('{"foo":123}'));
-                });
-            }, 'with http mocked out', {
+            httpception({
                 response: {
                     statusCode: 200,
                     headers: {
@@ -1283,7 +1394,11 @@ describe('Teepee', function () {
                         foo: 123
                     }
                 }
-            }, 'not to error');
+            });
+
+            return teepee({url: 'http://localhost:5984/', json: false}).then(function (response) {
+                expect(response.body, 'to equal', new Buffer('{"foo":123}'));
+            });
         });
 
         it('should throw an error on invalid JSON', function () {
@@ -1293,9 +1408,7 @@ describe('Teepee', function () {
                 responseStream.push(null);
             };
 
-            return expect(function (cb) {
-                new Teepee('http://localhost:5984/').request('foo', cb);
-            }, 'with http mocked out', {
+            httpception({
                 request: {
                     url: 'GET http://localhost:5984/foo'
                 },
@@ -1306,31 +1419,48 @@ describe('Teepee', function () {
                     },
                     body: responseStream
                 }
+            });
+
+            return expect(function (cb) {
+                new Teepee('http://localhost:5984/').request('foo', cb);
             }, 'to call the callback with error', new HttpError.BadGateway('Error parsing JSON response body'));
         });
     });
 
     describe('with a query', function () {
         it('should allow specifying the query string as a string', function () {
-            return expect(function (cb) {
-                new Teepee('http://localhost:5984/').request({ path: 'bar/quux', query: 'blabla' }, cb);
-            }, 'with http mocked out', {
+            httpception({
                 request: 'GET http://localhost:5984/bar/quux?blabla',
                 response: 200
+            });
+
+            return expect(function (cb) {
+                new Teepee('http://localhost:5984/').request({ path: 'bar/quux', query: 'blabla' }, cb);
             }, 'to call the callback without error');
         });
 
         it('should treat an empty string as a no-op', function () {
-            return expect(function (cb) {
-                new Teepee('http://localhost:5984/').request({ path: 'bar/quux', query: '' }, cb);
-            }, 'with http mocked out', {
+            httpception({
                 request: 'GET http://localhost:5984/bar/quux',
                 response: 200
+            });
+
+            return expect(function (cb) {
+                new Teepee('http://localhost:5984/').request({ path: 'bar/quux', query: '' }, cb);
             }, 'to call the callback without error');
         });
 
         describe('when specifying the query string as an object', function () {
             it('should url encode the parameter names and values and omit parameters with undefined values', function () {
+                httpception({
+                    request: 'GET http://localhost:5984/bar/quux' +
+                        '?ascii=blabla' +
+                        '&n%C3%B8nasc%C3%AF%C3%AE=n%C3%B8nasc%C3%AF%C3%AE' +
+                        '&multiple=foo' +
+                        '&multiple=n%C3%B8nasc%C3%AF%C3%AE',
+                    response: 200
+                });
+
                 return expect(function (cb) {
                     new Teepee('http://localhost:5984/').request({ path: 'bar/quux', query: {
                         ascii: 'blabla',
@@ -1338,29 +1468,26 @@ describe('Teepee', function () {
                         multiple: [ 'foo', 'nønascïî' ],
                         iAmUndefined: undefined
                     }}, cb);
-                }, 'with http mocked out', {
-                    request: 'GET http://localhost:5984/bar/quux' +
-                        '?ascii=blabla' +
-                        '&n%C3%B8nasc%C3%AF%C3%AE=n%C3%B8nasc%C3%AF%C3%AE' +
-                        '&multiple=foo' +
-                        '&multiple=n%C3%B8nasc%C3%AF%C3%AE',
-                    response: 200
                 }, 'to call the callback without error');
             });
 
             it('should not add a ? or & to the url when every parameter has an undefined value', function () {
-                return expect(function () {
-                    return new Teepee('http://localhost:5984/').request({ query: { iAmUndefined: undefined } });
-                }, 'with http mocked out', {
+                httpception({
                     request: 'GET http://localhost:5984/',
                     response: 200
-                }, 'not to error');
+                });
+
+                return new Teepee('http://localhost:5984/').request({ query: { iAmUndefined: undefined } });
             });
         });
     });
 
     describe('with a url containing placeholders', function () {
         it('should substitute a placeholder with a value found in the options object passed to request (and prefer it over an identically named one passed to the constructor)', function () {
+            httpception({
+                request: 'http://example.com.contacts/foo/hey'
+            });
+
             var teepee = new Teepee({
                 domainName: 'the.wrong.one',
                 url: 'http://{domainName}.contacts/foo/'
@@ -1371,12 +1498,15 @@ describe('Teepee', function () {
                     domainName: 'example.com',
                     path: 'hey'
                 }, cb);
-            }, 'with http mocked out', {
-                request: 'http://example.com.contacts/foo/hey'
             }, 'to call the callback without error');
         });
 
         it('should substitute a complex expression in a placeholder', function () {
+            httpception([
+                { request: 'http://couchdb3.example.com/contacts0/hey' },
+                { request: 'http://couchdb4.example.com/contacts1/there' }
+            ]);
+
             var teepee = new Teepee({
                 url: 'http://couchdb{{partitionNumber} === 0 ? 3 : 4}.example.com/contacts{partitionNumber}',
                 partitionPoints: ['info']
@@ -1408,13 +1538,14 @@ describe('Teepee', function () {
                         path: 'there'
                     }, cb);
                 });
-            }, 'with http mocked out', [
-                { request: 'http://couchdb3.example.com/contacts0/hey' },
-                { request: 'http://couchdb4.example.com/contacts1/there' }
-            ], 'to call the callback without error');
+            }, 'to call the callback without error');
         });
 
         it('should support passing a falsy value in request options', function () {
+            httpception({
+                request: 'http://couchdb3.example.com/contacts0/hey'
+            });
+
             var teepee = new Teepee({
                 url: 'http://couchdb{{partitionNumber} === 0 ? 3 : 4}.example.com/contacts{partitionNumber}',
                 partitionPoints: ['info']
@@ -1424,12 +1555,14 @@ describe('Teepee', function () {
                     partitionNumber: 0,
                     path: 'hey'
                 }, cb);
-            }, 'with http mocked out', {
-                request: 'http://couchdb3.example.com/contacts0/hey'
             }, 'to call the callback without error');
         });
 
         it('should substitute a placeholder with a value found in the options object passed to the constructor', function () {
+            httpception({
+                request: 'http://example.com.contacts/foo/hey'
+            });
+
             var teepee = new Teepee({
                 domainName: 'example.com',
                 url: 'http://{domainName}.contacts/foo/'
@@ -1437,12 +1570,14 @@ describe('Teepee', function () {
 
             return expect(function (cb) {
                 teepee.request({path: 'hey'}, cb);
-            }, 'with http mocked out', {
-                request: 'http://example.com.contacts/foo/hey'
             }, 'to call the callback without error');
         });
 
         it('should substitute a placeholder with the result of calling a function of that name passed to the request method', function () {
+            httpception({
+                request: 'http://example.com.contacts/foo/hey'
+            });
+
             var teepee = new Teepee({
                 domainName: function (requestOptions, placeholderName) {
                     return requestOptions.owner.replace(/^.*@/, '');
@@ -1452,8 +1587,6 @@ describe('Teepee', function () {
 
             return expect(function (cb) {
                 teepee.request({path: 'hey', owner: 'andreas@example.com'}, cb);
-            }, 'with http mocked out', {
-                request: 'http://example.com.contacts/foo/hey'
             }, 'to call the callback without error');
         });
     });
@@ -1475,9 +1608,7 @@ describe('Teepee', function () {
             });
 
             it('should make connections using the client certificate', function () {
-                return expect(function (cb) {
-                    teepee.request('foo', cb);
-                }, 'with http mocked out', {
+                httpception({
                     request: {
                         encrypted: true,
                         url: 'GET /foo',
@@ -1485,6 +1616,10 @@ describe('Teepee', function () {
                         key: one,
                         ca: two
                     }
+                });
+
+                return expect(function (cb) {
+                    teepee.request('foo', cb);
                 }, 'to call the callback without error');
             });
         });
@@ -1509,9 +1644,7 @@ describe('Teepee', function () {
             });
 
             it('should make connections using the client certificate', function () {
-                return expect(function (cb) {
-                    teepee.request('foo', cb);
-                }, 'with http mocked out', {
+                httpception({
                     request: {
                         encrypted: true,
                         url: 'GET /foo',
@@ -1519,6 +1652,10 @@ describe('Teepee', function () {
                         key: one,
                         ca: [two, three]
                     }
+                });
+
+                return expect(function (cb) {
+                    teepee.request('foo', cb);
                 }, 'to call the callback without error');
             });
         });
@@ -1613,6 +1750,14 @@ describe('Teepee', function () {
         });
 
         it('should not resume a 304 response if it is piped', function () {
+            httpception({
+                request: 'GET /',
+                response: {
+                    statusCode: 304,
+                    body: new Buffer([0, 1, 2])
+                }
+            });
+
             var resumeSpy;
             return expect(function (cb) {
                 teepee('http://example.com/').on('response', function (response) {
@@ -1620,12 +1765,6 @@ describe('Teepee', function () {
                     resumeSpy = sinon.spy(response, 'resume');
                     setImmediate(cb);
                 });
-            }, 'with http mocked out', {
-                request: 'GET /',
-                response: {
-                    statusCode: 304,
-                    body: new Buffer([0, 1, 2])
-                }
             }, 'to call the callback without error').then(function () {
                 expect(resumeSpy, 'was not called');
             });
@@ -1675,9 +1814,7 @@ describe('Teepee', function () {
 
     describe('with a username and password passed to the constructor', function () {
         it('should use them as basic auth credentials', function () {
-            return expect(function (cb) {
-                return new Teepee({ username: 'foobar', password: 'quux', url: 'https://localhost:4232/'}).request(cb);
-            }, 'with http mocked out', {
+            httpception({
                 request: {
                     url: 'https://localhost:4232/',
                     headers: {
@@ -1685,15 +1822,17 @@ describe('Teepee', function () {
                     }
                 },
                 response: 200
+            });
+
+            return expect(function (cb) {
+                return new Teepee({ username: 'foobar', password: 'quux', url: 'https://localhost:4232/'}).request(cb);
             }, 'to call the callback without error');
         });
     });
 
     describe('with a username and password passed to the request method', function () {
         it('should use them as basic auth credentials', function () {
-            return expect(function (cb) {
-                return new Teepee('https://localhost:4232/').request({ username: 'foobar', password: 'quux' }, cb);
-            }, 'with http mocked out', {
+            httpception({
                 request: {
                     url: 'https://localhost:4232/',
                     headers: {
@@ -1701,15 +1840,17 @@ describe('Teepee', function () {
                     }
                 },
                 response: 200
+            });
+
+            return expect(function (cb) {
+                return new Teepee('https://localhost:4232/').request({ username: 'foobar', password: 'quux' }, cb);
             }, 'to call the callback without error');
         });
     });
 
     describe('with a username and password in the url', function () {
         it('should use them as basic auth credentials', function () {
-            return expect(function (cb) {
-                teepee('https://foobar:quux@localhost:4232/', cb);
-            }, 'with http mocked out', {
+            httpception({
                 request: {
                     url: 'https://localhost:4232/',
                     headers: {
@@ -1717,13 +1858,15 @@ describe('Teepee', function () {
                     }
                 },
                 response: 200
+            });
+
+            return expect(function (cb) {
+                teepee('https://foobar:quux@localhost:4232/', cb);
             }, 'to call the callback without error');
         });
 
         it('should support percent-encoded octets, including colons, and a non-encoded colon in the password', function () {
-            return expect(function (cb) {
-                teepee('http://fo%C3%A6o%25bar:baz%25quux:yadda@localhost:4232/', cb);
-            }, 'with http mocked out', {
+            httpception({
                 request: {
                     url: 'http://localhost:4232/',
                     headers: {
@@ -1731,13 +1874,15 @@ describe('Teepee', function () {
                     }
                 },
                 response: 200
+            });
+
+            return expect(function (cb) {
+                teepee('http://fo%C3%A6o%25bar:baz%25quux:yadda@localhost:4232/', cb);
             }, 'to call the callback without error');
         });
 
         it('should leave all percent encoded octets in the username if one of them does not decode as UTF-8', function () {
-            return expect(function (cb) {
-                teepee('http://fo%C3%A6o%25bar%C3:baz%C3%A6quux:yadda@localhost:4232/', cb);
-            }, 'with http mocked out', {
+            httpception({
                 request: {
                     url: 'http://localhost:4232/',
                     headers: {
@@ -1745,43 +1890,49 @@ describe('Teepee', function () {
                     }
                 },
                 response: 200
+            });
+
+            return expect(function (cb) {
+                teepee('http://fo%C3%A6o%25bar%C3:baz%C3%A6quux:yadda@localhost:4232/', cb);
             }, 'to call the callback without error');
         });
     });
 
     describe('when invoked without new', function () {
         it('should perform a request directly', function () {
-            return expect(function (cb) {
-                teepee('https://localhost:8000/', cb);
-            }, 'with http mocked out', {
+            httpception({
                 request: 'GET http://localhost:8000/',
                 response: 200
+            });
+
+            return expect(function (cb) {
+                teepee('https://localhost:8000/', cb);
             }, 'to call the callback without error');
         });
 
         it('should assume http:// if no protocol is provided', function () {
-            return expect(function () {
-                return teepee('localhost:1234/');
-            }, 'with http mocked out', {
+            httpception({
                 request: 'GET http://localhost:1234/',
                 response: 200
-            }, 'not to error');
+            });
+
+            return teepee('localhost:1234/');
         });
 
         it('should accept the method before the url', function () {
-            return expect(function (cb) {
-                teepee('POST https://localhost:8000/', cb);
-            }, 'with http mocked out', {
+            httpception({
                 request: 'POST http://localhost:8000/',
                 response: 200
+            });
+
+            return expect(function (cb) {
+                teepee('POST https://localhost:8000/', cb);
             }, 'to call the callback without error');
         });
 
         // Regression test
         it('should allow specifying a request body', function () {
-            return expect(function (cb) {
-                teepee({ url: 'http://localhost:5984/', method: 'POST', body: { what: 'gives' } }, cb);
-            }, 'with http mocked out', {
+            httpception({
                 request: {
                     url: 'POST http://localhost:5984/',
                     headers: {
@@ -1790,16 +1941,22 @@ describe('Teepee', function () {
                     body: { what: 'gives' }
                 },
                 response: 200
+            });
+
+            return expect(function (cb) {
+                teepee({ url: 'http://localhost:5984/', method: 'POST', body: { what: 'gives' } }, cb);
             }, 'to call the callback without error');
         });
     });
 
     expect.addAssertion('<array> to result in request <string|object>', function (expect, subject, value) {
-        return expect(function (cb) {
-            return new Teepee(subject[0]).request(subject[1], cb);
-        }, 'with http mocked out', {
+        httpception({
             request: value,
             response: 200
+        });
+
+        return expect(function (cb) {
+            return new Teepee(subject[0]).request(subject[1], cb);
         }, 'to call the callback without error');
     });
 
@@ -1858,11 +2015,13 @@ describe('Teepee', function () {
         });
 
         it('#request should accept a url option as an alias for path', function () {
-            return expect(function (cb) {
-                new Teepee('https://localhost:8000/').request({url: 'bar'}, cb);
-            }, 'with http mocked out', {
+            httpception({
                 request: 'http://localhost:8000/bar',
                 response: 200
+            });
+
+            return expect(function (cb) {
+                new Teepee('https://localhost:8000/').request({url: 'bar'}, cb);
             }, 'to call the callback without error');
         });
     });
@@ -1912,6 +2071,11 @@ describe('Teepee', function () {
         });
 
         it('should produce an instance that echoes events to the parent', function () {
+            httpception([
+                { response: 200 },
+                { response: 200 }
+            ]);
+
             var teepee = new Teepee('http://localhost:1234/'),
                 subsidiary = teepee.subsidiary('http://localhost:4567/'),
                 subsidiaryRequestListener = sinon.spy().named('subsidiaryRequestListener'),
@@ -1924,10 +2088,7 @@ describe('Teepee', function () {
                 subsidiary.request(passError(cb, function () {
                     teepee.request(cb);
                 }));
-            }, 'with http mocked out', [
-                { response: 200 },
-                { response: 200 }
-            ], 'to call the callback without error').then(function () {
+            }, 'to call the callback without error').then(function () {
                 expect([ subsidiaryRequestListener, requestListener ], 'to have calls satisfying', function () {
                     subsidiaryRequestListener(expect.it('to be an object'));
                     requestListener({ requestOptions: { port: 4567 } });
@@ -1950,12 +2111,12 @@ describe('Teepee', function () {
 
     describe('with a custom preprocessQueryStringParameterValue', function () {
         it('should use the value returned by the function', function () {
-            sandbox.stub(Teepee.prototype, 'preprocessQueryStringParameterValue').returns('bogus');
-            return expect(function () {
-                return teepee({url: 'http://www.google.com/', query: {foo: 'bar'}});
-            }, 'with http mocked out', {
+            httpception({
                 request: 'http://www.google.com/?foo=bogus'
-            }, 'not to error').then(function () {
+            });
+
+            sandbox.stub(Teepee.prototype, 'preprocessQueryStringParameterValue').returns('bogus');
+            return teepee({url: 'http://www.google.com/', query: {foo: 'bar'}}).then(function () {
                 expect(Teepee.prototype.preprocessQueryStringParameterValue, 'to have calls satisfying', function () {
                     Teepee.prototype.preprocessQueryStringParameterValue('bar', 'foo');
                 });
@@ -1965,6 +2126,16 @@ describe('Teepee', function () {
 
     describe('with preprocessRequestOptions', function () {
         it('should allow overriding the protocol, host, port, path, and headers', function () {
+            httpception({
+                request: {
+                    url: 'https://someotherexample.com:1234/alternativePath',
+                    headers: {
+                        Host: 'example.com' // This might be a bit unintutive
+                    }
+                },
+                response: 200
+            });
+
             var teepee = new Teepee('http://example.com/foo', {headers: {Foo: 'bar'}});
             teepee.preprocessRequestOptions = function (requestOptions, options, cb) {
                 requestOptions.protocol = 'https';
@@ -1975,28 +2146,22 @@ describe('Teepee', function () {
             };
             return expect(function (cb) {
                 teepee.request(cb);
-            }, 'with http mocked out', {
-                request: {
-                    url: 'https://someotherexample.com:1234/alternativePath',
-                    headers: {
-                        Host: 'example.com' // This might be a bit unintutive
-                    }
-                },
-                response: 200
             }, 'to call the callback without error');
         });
     });
 
     it('should support passing the response stream as the request body for a subsequent request', function () {
+        httpception([
+            { request: 'GET http://example.com/', response: { body: new Buffer('abcdef') } },
+            { request: { url: 'PUT http://somewhereelse.com/', body: new Buffer('abcdef') }, response: 200 }
+        ]);
+
         return expect(function (cb) {
             teepee('http://example.com/')
                 .on('success', function (response) {
                     teepee({ url: 'http://somewhereelse.com/', method: 'PUT', body: response }, cb);
                 });
-        }, 'with http mocked out', [
-            { request: 'GET http://example.com/', response: { body: new Buffer('abcdef') } },
-            { request: { url: 'PUT http://somewhereelse.com/', body: new Buffer('abcdef') }, response: 200 }
-        ], 'to call the callback without error');
+        }, 'to call the callback without error');
     });
 
     it('should map DNS errors to DnsError instances', function () {
@@ -2004,11 +2169,13 @@ describe('Teepee', function () {
     });
 
     it('should allow calling .then() more than once', function () {
+        httpception({require: 'http://foo.com/'});
+
         return expect(function (cb) {
             var request = teepee('http://foo.com/');
             request.then(function () {});
             request.then(function () {});
-        }, 'with http mocked out', [], 'not to throw');
+        }, 'not to throw');
     });
 
     it('should map socket errors to SocketError instances', function () {
@@ -2017,29 +2184,24 @@ describe('Teepee', function () {
     });
 
     it('should accept a password-less url', function () {
-        return expect(function () {
-            return teepee('http://foo:@example.com/');
-        }, 'with http mocked out', {
+        httpception({
             request: { url: 'GET http://example.com/', headers: { authorization: 'Basic Zm9v' } },
             response: 200
-        }, 'not to error');
+        });
+
+        return teepee('http://foo:@example.com/');
     });
 
     it('should accept a url with a pipe in the query string', function () {
-        return expect(function () {
-            return teepee('https://fonts.googleapis.com/css?family=Just+Another+Hand|Inconsolata:700');
-        }, 'with http mocked out', {
+        httpception({
             response: 200
-        }, 'not to error');
+        });
+
+        return teepee('https://fonts.googleapis.com/css?family=Just+Another+Hand|Inconsolata:700');
     });
 
     it('should decode a gzipped response body', function () {
-        return expect(function () {
-            return teepee('http://example.com/')
-                .then(function (response) {
-                    expect(response.body, 'to equal', new Buffer('foobarquux', 'utf-8'));
-                });
-        }, 'with http mocked out', {
+        httpception({
             request: 'GET http://example.com/',
             response: {
                 headers: {
@@ -2049,16 +2211,16 @@ describe('Teepee', function () {
                 // zlib.gzipSync('foobarquux') (not supported with node.js 0.10)
                 unchunkedBody: new Buffer([0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x4b, 0xcb, 0xcf, 0x4f, 0x4a, 0x2c, 0x2a, 0x2c, 0x2d, 0xad, 0x00, 0x00, 0x40, 0xcb, 0xde, 0x64, 0x0a, 0x00, 0x00, 0x00])
             }
-        }, 'not to error');
+        });
+
+        return teepee('http://example.com/')
+            .then(function (response) {
+                expect(response.body, 'to equal', new Buffer('foobarquux', 'utf-8'));
+            });
     });
 
     it('should decode a deflated response body', function () {
-        return expect(function () {
-            return teepee('http://example.com/')
-                .then(function (response) {
-                    expect(response.body, 'to equal', new Buffer('foobarquux', 'utf-8'));
-                });
-        }, 'with http mocked out', {
+        httpception({
             request: 'GET http://example.com/',
             response: {
                 headers: {
@@ -2068,6 +2230,11 @@ describe('Teepee', function () {
                 // zlib.deflateSync('foobarquux') (not supported with node.js 0.10)
                 unchunkedBody: new Buffer([0x78, 0x9c, 0x4b, 0xcb, 0xcf, 0x4f, 0x4a, 0x2c, 0x2a, 0x2c, 0x2d, 0xad, 0x00, 0x00, 0x17, 0x18, 0x04, 0x4d])
             }
-        }, 'not to error');
+        });
+
+        return teepee('http://example.com/')
+            .then(function (response) {
+                expect(response.body, 'to equal', new Buffer('foobarquux', 'utf-8'));
+            });
     });
 });

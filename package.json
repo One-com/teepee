@@ -32,7 +32,7 @@
     "istanbul": "^0.4.3",
     "mocha": "^3.0.2",
     "sinon": "^1.17.5",
-    "unexpected": "^10.15.1",
+    "unexpected": "10.18.1",
     "unexpected-sinon": "^10.4.0"
   }
 }

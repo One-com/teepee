@@ -1462,12 +1462,15 @@ describe('Teepee', function () {
                 });
 
                 return expect(function (cb) {
-                    new Teepee('http://localhost:5984/').request({ path: 'bar/quux', query: {
-                        ascii: 'blabla',
-                        nønascïî: 'nønascïî',
-                        multiple: [ 'foo', 'nønascïî' ],
-                        iAmUndefined: undefined
-                    }}, cb);
+                    new Teepee('http://localhost:5984/').request({
+                        path: 'bar/quux',
+                        query: {
+                            ascii: 'blabla',
+                            nønascïî: 'nønascïî',
+                            multiple: [ 'foo', 'nønascïî' ],
+                            iAmUndefined: undefined
+                        }
+                    }, cb);
                 }, 'to call the callback without error');
             });
 

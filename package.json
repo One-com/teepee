@@ -14,11 +14,11 @@
   },
   "dependencies": {
     "bluebird": "2.9.34",
-    "createerror": "1.1.0",
-    "dnserrors": "2.0.2",
-    "httperrors": "2.1.0",
+    "createerror": "1.2.0",
+    "dnserrors": "2.1.0",
+    "httperrors": "2.2.0",
     "passerror": "1.1.0",
-    "socketerrors-papandreou": "0.2.0-patch2",
+    "socketerrors-papandreou": "0.2.0-patch3",
     "underscore": "1.4.0"
   },
   "publishConfig": {

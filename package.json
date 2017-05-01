@@ -21,9 +21,6 @@
     "socketerrors-papandreou": "0.2.0-patch3",
     "underscore": "1.8.3"
   },
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
-  },
   "devDependencies": {
     "coveralls": "^2.11.9",
     "eslint": "^2.13.1",

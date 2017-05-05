@@ -1425,6 +1425,28 @@ describe('Teepee', function () {
                 new Teepee('http://localhost:5984/').request('foo', cb);
             }, 'to call the callback with error', new HttpError.BadGateway('Error parsing JSON response body'));
         });
+
+        it('should not attempt to parse json when the status is 204 and the body is empty', function () {
+            var responseStream = new stream.Readable();
+            responseStream._read = function () {
+                responseStream.push(null);
+            };
+
+            httpception({
+                request: 'GET http://localhost:5984/foo',
+                response: {
+                    statusCode: 204,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: responseStream
+                }
+            });
+
+            return expect(function (cb) {
+                new Teepee('http://localhost:5984/').request('foo', cb);
+            }, 'to call the callback without error');
+        });
     });
 
     describe('with a query', function () {

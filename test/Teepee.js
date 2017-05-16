@@ -47,6 +47,15 @@ describe('Teepee', function () {
             return Teepee.post({ url: 'http://www.example.com/' });
         });
 
+        it('should allow making a POST request via Teepee.post(<url>, { options })', function () {
+            httpception({
+                request: 'POST http://www.example.com/?abc=123',
+                response: 200
+            });
+
+            return Teepee.post('http://www.example.com/', { query: { abc: 123 } });
+        });
+
         it('should alias Teepee.delete as Teepee.del', function () {
             httpception({
                 request: 'DELETE http://www.example.com/',
@@ -80,6 +89,15 @@ describe('Teepee', function () {
             });
 
             return new Teepee().post({ url: 'http://www.example.com/' });
+        });
+
+        it('should allow making a POST request via new Teepee().post(<url>, { options })', function () {
+            httpception({
+                request: 'POST http://www.example.com/?foo=123',
+                response: 200
+            });
+
+            return new Teepee().post('http://www.example.com/', { query: { foo: 123 } });
         });
 
         it('should allow making a POST request via new Teepee(<url>).post()', function () {
@@ -556,6 +574,17 @@ describe('Teepee', function () {
 
         return expect(function (cb) {
             new Teepee('http://localhost:5984').request(cb);
+        }, 'to call the callback without error');
+    });
+
+    it('should allow the options object to follow the url', function () {
+        httpception({
+            request: 'GET http://localhost:5984/?foo=123',
+            response: 200
+        });
+
+        return expect(function (cb) {
+            new Teepee().request('http://localhost:5984', { query: { foo: 123 } }, cb);
         }, 'to call the callback without error');
     });
 

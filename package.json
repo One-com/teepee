@@ -16,7 +16,9 @@
     "bluebird": "2.9.34",
     "createerror": "1.2.0",
     "dnserrors": "2.1.0",
+    "form-data": "2.1.4",
     "httperrors": "2.2.0",
+    "is-stream": "1.1.0",
     "lodash": "^4.17.4",
     "passerror": "1.1.1",
     "socketerrors-papandreou": "0.2.0-patch3"

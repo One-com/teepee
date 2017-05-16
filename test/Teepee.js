@@ -2293,4 +2293,40 @@ describe('Teepee', function () {
             }
         });
     });
+
+    it('should support sending a multipart/form-data request', function () {
+        httpception({
+            request: {
+                url: 'POST http://example.com/',
+                headers: {
+                    'Content-Type': expect.it('to begin with', 'multipart/form-data; boundary=')
+                },
+                parts: [
+                    {
+                        headers: {
+                            'Content-Disposition': 'form-data; name="abc"'
+                        },
+                        body: 'def'
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'text/plain'
+                        },
+                        body: 'foobar'
+                    }
+                ]
+            },
+            response: 200
+        });
+
+        return teepee.post('http://example.com/', {
+            formData: {
+                abc: 'def',
+                attachment: {
+                    contentType: 'text/plain',
+                    value: 'foobar'
+                }
+            }
+        });
+    });
 });

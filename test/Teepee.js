@@ -2240,4 +2240,28 @@ describe('Teepee', function () {
                 expect(response.body, 'to equal', new Buffer('foobarquux', 'utf-8'));
             });
     });
+
+    it('should provide the response body even when getting an error status code', function () {
+        httpception({
+            request: 'GET http://example.com/',
+            response: {
+                statusCode: 500,
+                body: {
+                    sorry: {
+                        no: 'worky'
+                    }
+                }
+            }
+        });
+
+        return expect(teepee('http://example.com/'), 'to be rejected with', {
+            message: 'HTTP 500 Internal Server Error',
+            statusCode: 500,
+            data: {
+                sorry: {
+                    no: 'worky'
+                }
+            }
+        });
+    });
 });

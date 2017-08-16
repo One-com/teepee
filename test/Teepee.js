@@ -1,5 +1,5 @@
 /*global describe, it, __dirname, JSON, clearTimeout, setTimeout, setImmediate, beforeEach, afterEach, window, global*/
-var Teepee = require('../lib/Teepee'),
+var Teepee = require('../'),
     teepee = Teepee, // Alias so that jshint doesn't complain when invoking without new
     zlib = require('zlib'),
     HttpError = require('httperrors'),

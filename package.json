@@ -2,7 +2,7 @@
   "name": "teepee",
   "version": "2.31.1",
   "description": "Generic HTTP client",
-  "main": "lib/Teepee.js",
+  "main": "index.js",
   "author": "Andreas Lind @papandreou <andreas@one.com>",
   "license": "BSD-3-Clause",
   "repository": "git://github.com/One-com/teepee",
@@ -13,6 +13,7 @@
     "coverage": "NODE_ENV=development istanbul cover _mocha -- --reporter dot && echo google-chrome coverage/lcov-report/index.html"
   },
   "dependencies": {
+    "@std/esm": "0.3.0",
     "bluebird": "2.9.34",
     "createerror": "1.2.0",
     "dnserrors": "2.1.2",

@@ -1,2 +1,2 @@
 require("@std/esm");
-module.exports = require("./lib/Teepee.mjs").default;
+module.exports = require("./lib/Teepee").default;

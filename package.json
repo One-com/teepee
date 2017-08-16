@@ -38,5 +38,8 @@
     "sinon": "^1.17.5",
     "unexpected": "^10.15.1",
     "unexpected-sinon": "^10.4.0"
+  },
+  "@std/esm": {
+    "esm": "js"
   }
 }

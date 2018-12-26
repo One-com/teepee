@@ -31,7 +31,7 @@
     "coveralls": "^2.11.9",
     "eslint": "^2.13.1",
     "eslint-config-onelint": "^1.1.0",
-    "httpception": "0.5.1",
+    "httpception": "^2.1.0",
     "istanbul": "^0.4.3",
     "mocha": "^3.0.2",
     "sinon": "^1.17.5",

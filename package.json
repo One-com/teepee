@@ -13,7 +13,6 @@
     "coverage": "NODE_ENV=development istanbul cover _mocha -- --reporter dot && echo google-chrome coverage/lcov-report/index.html"
   },
   "dependencies": {
-    "bluebird": "2.9.34",
     "createerror": "1.2.0",
     "dnserrors": "2.1.2",
     "form-data": "2.1.4",

@@ -391,15 +391,17 @@ describe('Teepee', () => {
       teepee.request({ numRetries: 1 }, cb);
     }, 'to call the callback without error').then(() => {
       expect(requestListener, 'was called twice').and(
-        'was always called with exactly',
-        {
-          url: 'http://localhost:1234/',
-          requestOptions: {
-            // ...
-            host: 'localhost',
-            port: 1234,
-            method: 'GET'
-          }
+        'to have all calls satisfying',
+        () => {
+          requestListener({
+            url: 'http://localhost:1234/',
+            requestOptions: {
+              // ...
+              host: 'localhost',
+              port: 1234,
+              method: 'GET'
+            }
+          });
         }
       );
     });
@@ -602,7 +604,11 @@ describe('Teepee', () => {
 
     expect(teepee.getAgent(), 'to be an', http.Agent);
 
-    expect(Agent, 'was called with', { foobarquux: 123 });
+    expect(
+      Agent,
+      'to have a call satisfying',
+      () => new Agent({ foobarquux: 123 })
+    );
   });
 
   it('should use the global agent if no agent config is provided', () => {
@@ -1335,12 +1341,9 @@ describe('Teepee', () => {
               }),
             'not to error'
           ).then(() => {
-            expect(
-              setTimeout,
-              'was called with',
-              expect.it('to be a function'),
-              3
-            );
+            expect(setTimeout, 'to have a call satisfying', () => {
+              setTimeout(expect.it('to be a function'), 3);
+            });
           });
         });
       });

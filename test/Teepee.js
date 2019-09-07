@@ -1,20 +1,20 @@
-/*global describe, it, __dirname, JSON, clearTimeout, setTimeout, setImmediate, beforeEach, afterEach, window, global*/
-var Teepee = require('../lib/Teepee'),
-    teepee = Teepee, // Alias so that jshint doesn't complain when invoking without new
-    zlib = require('zlib'),
-    HttpError = require('httperrors'),
-    SocketError = require('socketerrors'),
-    DnsError = require('dnserrors'),
-    passError = require('passerror'),
-    unexpected = require('unexpected'),
-    sinon = require('sinon'),
-    util = require('util'),
-    fs = require('fs'),
-    http = require('http'),
-    https = require('https'),
-    stream = require('stream'),
-    pathModule = require('path'),
-    httpception = require('httpception');
+/* global describe, it, __dirname, JSON, clearTimeout, setTimeout, setImmediate, beforeEach, afterEach, window, global */
+var Teepee = require('../lib/Teepee');
+    var teepee = Teepee; // Alias so that jshint doesn't complain when invoking without new
+    var zlib = require('zlib');
+    var HttpError = require('httperrors');
+    var SocketError = require('socketerrors');
+    var DnsError = require('dnserrors');
+    var passError = require('passerror');
+    var unexpected = require('unexpected');
+    var sinon = require('sinon');
+    var util = require('util');
+    var fs = require('fs');
+    var http = require('http');
+    var https = require('https');
+    var stream = require('stream');
+    var pathModule = require('path');
+    var httpception = require('httpception');
 
 describe('Teepee', function () {
     var expect = unexpected.clone()
@@ -265,9 +265,9 @@ describe('Teepee', function () {
             response: 200
         });
 
-        var teepee = new Teepee('http://localhost:1234/'),
-            successfulRequestListener = sinon.spy().named('successfulRequestListener'),
-            failedRequestListener = sinon.spy().named('failedRequestListener');
+        var teepee = new Teepee('http://localhost:1234/');
+            var successfulRequestListener = sinon.spy().named('successfulRequestListener');
+            var failedRequestListener = sinon.spy().named('failedRequestListener');
         teepee.on('successfulRequest', successfulRequestListener)
             .on('failedRequest', failedRequestListener);
         return expect(function (cb) {
@@ -345,8 +345,8 @@ describe('Teepee', function () {
             { response: 200 }
         ]);
 
-        var teepee = new Teepee('http://localhost:1234/'),
-            requestListener = sinon.spy().named('requestListener');
+        var teepee = new Teepee('http://localhost:1234/');
+            var requestListener = sinon.spy().named('requestListener');
         teepee.on('request', requestListener);
         return expect(function (cb) {
             teepee.request({ numRetries: 1 }, cb);
@@ -368,9 +368,9 @@ describe('Teepee', function () {
             response: 404
         });
 
-        var teepee = new Teepee('http://localhost:1234/'),
-            successfulRequestListener = sinon.spy().named('successfulRequestListner'),
-            failedRequestListener = sinon.spy().named('failedRequestListener');
+        var teepee = new Teepee('http://localhost:1234/');
+            var successfulRequestListener = sinon.spy().named('successfulRequestListner');
+            var failedRequestListener = sinon.spy().named('failedRequestListener');
         teepee.on('failedRequest', failedRequestListener);
         teepee.on('successfulRequest', successfulRequestListener);
         return expect(function (cb) {
@@ -1034,11 +1034,11 @@ describe('Teepee', function () {
                     if (requestHandler.callCount > 1) {
                         res.end('Bar');
                     }
-                }),
-                server = http.createServer(requestHandler).listen(0),
-                serverAddress = server.address(),
-                serverHostname = serverAddress.address === '::' ? 'localhost' : serverAddress.address,
-                url = 'http://' + serverHostname + ':' + serverAddress.port + '/';
+                });
+                var server = http.createServer(requestHandler).listen(0);
+                var serverAddress = server.address();
+                var serverHostname = serverAddress.address === '::' ? 'localhost' : serverAddress.address;
+                var url = `http://${  serverHostname  }:${  serverAddress.port  }/`;
 
             return expect(function (cb) {
                 teepee({ url: url, numRetries: 1, timeout: 20 }, cb);
@@ -1057,10 +1057,10 @@ describe('Teepee', function () {
                 { response: 200 }
             ]);
 
-            var teepee = new Teepee('http://localhost:1234/'),
-                successfulRequestListener = sinon.spy().named('successfulRequestListener'),
-                failedRequestListener = sinon.spy().named('failedRequestListener'),
-                retriedRequestListener = sinon.spy().named('retriedRequestListener');
+            var teepee = new Teepee('http://localhost:1234/');
+                var successfulRequestListener = sinon.spy().named('successfulRequestListener');
+                var failedRequestListener = sinon.spy().named('failedRequestListener');
+                var retriedRequestListener = sinon.spy().named('retriedRequestListener');
             teepee
                 .on('failedRequest', failedRequestListener)
                 .on('successfulRequest', successfulRequestListener)
@@ -1545,8 +1545,8 @@ describe('Teepee', function () {
             });
 
             teepee.partitionNumber = function (requestOptions) {
-                var key = requestOptions.domainName.split('.').reverse().join('.'),
-                    databaseNumber = 0;
+                var key = requestOptions.domainName.split('.').reverse().join('.');
+                    var databaseNumber = 0;
                 for (var i = 0 ; i < this.partitionPoints.length ; i += 1) {
                     if (key >= this.partitionPoints[i]) {
                         databaseNumber += 1;
@@ -1624,10 +1624,10 @@ describe('Teepee', function () {
     });
 
     describe('with a client certificate and related properties', function () {
-        var zero = new Buffer([0]),
-            one = new Buffer([1]),
-            two = new Buffer([2]),
-            three = new Buffer([3]);
+        var zero = new Buffer([0]);
+            var one = new Buffer([1]);
+            var two = new Buffer([2]);
+            var three = new Buffer([3]);
 
         describe('specified as Buffer instances', function () {
             var teepee = new Teepee({cert: zero, key: one, ca: two, url: 'https://example.com:5984/'});
@@ -1703,7 +1703,7 @@ describe('Teepee', function () {
             server.listen();
 
             var teepee = new Teepee({
-                url: 'http://localhost:' + server.address().port + '/',
+                url: `http://localhost:${  server.address().port  }/`,
                 agent: true,
                 maxSockets: 1
             });
@@ -1746,7 +1746,7 @@ describe('Teepee', function () {
             server.listen();
 
             var teepee = new Teepee({
-                url: 'http://localhost:' + server.address().port + '/',
+                url: `http://localhost:${  server.address().port  }/`,
                 agent: true,
                 maxSockets: 1
             });
@@ -1811,7 +1811,7 @@ describe('Teepee', function () {
             server.listen();
 
             var teepee = new Teepee({
-                url: 'http://localhost:' + server.address().port + '/',
+                url: `http://localhost:${  server.address().port  }/`,
                 agent: true,
                 maxSockets: 1
             });
@@ -2060,21 +2060,21 @@ describe('Teepee', function () {
 
     describe('#subsidiary()', function () {
         it('should use the same agent instance as the parent', function () {
-            var teepee = new Teepee('http://www.foo.com/'),
-                subsidiary = teepee.subsidiary('http://www.example.com/');
+            var teepee = new Teepee('http://www.foo.com/');
+                var subsidiary = teepee.subsidiary('http://www.example.com/');
             expect(teepee.getAgent('http'), 'to be', subsidiary.getAgent('http'));
         });
 
         it('should accept a string which will override the url', function () {
-            var teepee = new Teepee('http://quux.com:123/'),
-                subsidiary = teepee.subsidiary('http://foo:bar@baz.com:123/');
+            var teepee = new Teepee('http://quux.com:123/');
+                var subsidiary = teepee.subsidiary('http://foo:bar@baz.com:123/');
             expect(teepee.url, 'to equal', 'http://quux.com:123/');
             expect(subsidiary.url, 'to equal', 'http://foo:bar@baz.com:123/');
         });
 
         it('should accept an options object, which will override the options from the main instance', function () {
-            var teepee = new Teepee({ foo: 123, url: 'http://quux.com:123/' }),
-                subsidiary = teepee.subsidiary({ foo: 456, url: 'http://foo:bar@baz.com:123/' });
+            var teepee = new Teepee({ foo: 123, url: 'http://quux.com:123/' });
+                var subsidiary = teepee.subsidiary({ foo: 456, url: 'http://foo:bar@baz.com:123/' });
             expect(subsidiary, 'to satisfy', {
                 url: 'http://foo:bar@baz.com:123/',
                 foo: 456
@@ -2082,23 +2082,23 @@ describe('Teepee', function () {
         });
 
         it('should clone the default headers from the parent', function () {
-            var teepee = new Teepee({ headers: { foo: 'bar' }}),
-                subsidiary = teepee.subsidiary();
+            var teepee = new Teepee({ headers: { foo: 'bar' }});
+                var subsidiary = teepee.subsidiary();
             expect(subsidiary.headers, 'to equal', { foo: 'bar' });
             expect(subsidiary.headers, 'not to be', teepee.headers);
         });
 
         it('should merge the headers with those of the parent instance, preferring the ones passed to .subsidiary()', function () {
-            var teepee = new Teepee({ headers: { foo: 'bar', baz: 'quux' }}),
-                subsidiary = teepee.subsidiary({ headers: { foo: 'blah' }});
+            var teepee = new Teepee({ headers: { foo: 'bar', baz: 'quux' }});
+                var subsidiary = teepee.subsidiary({ headers: { foo: 'blah' }});
             expect(subsidiary.headers, 'to equal', { foo: 'blah', baz: 'quux' });
             expect(teepee.headers, 'to equal', { foo: 'bar', baz: 'quux' });
             expect(subsidiary.headers, 'not to be', teepee.headers);
         });
 
         it('should inherit numRetries from the parent', function () {
-            var teepee = new Teepee({ numRetries: 99 }),
-                subsidiary = teepee.subsidiary();
+            var teepee = new Teepee({ numRetries: 99 });
+                var subsidiary = teepee.subsidiary();
             expect(subsidiary.numRetries, 'to equal', 99);
         });
 
@@ -2108,10 +2108,10 @@ describe('Teepee', function () {
                 { response: 200 }
             ]);
 
-            var teepee = new Teepee('http://localhost:1234/'),
-                subsidiary = teepee.subsidiary('http://localhost:4567/'),
-                subsidiaryRequestListener = sinon.spy().named('subsidiaryRequestListener'),
-                requestListener = sinon.spy().named('requestListener');
+            var teepee = new Teepee('http://localhost:1234/');
+                var subsidiary = teepee.subsidiary('http://localhost:4567/');
+                var subsidiaryRequestListener = sinon.spy().named('subsidiaryRequestListener');
+                var requestListener = sinon.spy().named('requestListener');
 
             teepee.on('request', requestListener);
             subsidiary.on('request', subsidiaryRequestListener);

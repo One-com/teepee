@@ -131,7 +131,7 @@ describe('Teepee', () => {
       return new Teepee().del('http://www.example.com/');
     });
 
-    it('should throw if attempting to pass non-string, non-object to Teepee.post()', () => {
+    it('should throw if attempting to pass non-string, non-object to Teepee.prototype.post()', () => {
       httpception([]);
 
       return expect(
@@ -580,7 +580,9 @@ describe('Teepee', () => {
         AgentByProtocol: { http: CustomHttpAgent, https: CustomHttpsAgent }
       });
 
-      return teepee.request('quux').then(() => teepee.request('https://example.com/'));
+      return teepee
+        .request('quux')
+        .then(() => teepee.request('https://example.com/'));
     }, 'not to error').then(() => {
       expect(teepee.agentByProtocol.http, 'to be a', CustomHttpAgent);
       expect(teepee.agentByProtocol.http.addRequest, 'was called once');
@@ -723,7 +725,10 @@ describe('Teepee', () => {
       response: 200
     });
 
-    return expect(() => teepee({ url: 'http://localhost/', headers: { Host: 'baz.com' } }), 'not to error');
+    return expect(
+      () => teepee({ url: 'http://localhost/', headers: { Host: 'baz.com' } }),
+      'not to error'
+    );
   });
 
   it('should allow specifying the request body as a Buffer', () => {
@@ -779,11 +784,15 @@ describe('Teepee', () => {
         response: 200
       });
 
-      return expect(() => new Teepee('http://localhost:5984/').request({
-        method: 'POST',
-        path: 'foo',
-        body: { what: 'gives' }
-      }), 'not to error');
+      return expect(
+        () =>
+          new Teepee('http://localhost:5984/').request({
+            method: 'POST',
+            path: 'foo',
+            body: { what: 'gives' }
+          }),
+        'not to error'
+      );
     });
 
     it('should not overwrite an existing Content-Type header', () => {
@@ -798,11 +807,15 @@ describe('Teepee', () => {
         response: 200
       });
 
-      return expect(() => new Teepee('http://localhost:5984/').request({
-        method: 'POST',
-        headers: { 'content-type': 'application/vnd.api+json' },
-        body: { what: 'gives' }
-      }), 'not to error');
+      return expect(
+        () =>
+          new Teepee('http://localhost:5984/').request({
+            method: 'POST',
+            headers: { 'content-type': 'application/vnd.api+json' },
+            body: { what: 'gives' }
+          }),
+        'not to error'
+      );
     });
   });
 
@@ -961,12 +974,16 @@ describe('Teepee', () => {
           }
         });
 
-        return expect(() => teepee({
-          url: 'PUT http://localhost/',
-          body() {
-            return Buffer.from('hello');
-          }
-        }), 'not to error');
+        return expect(
+          () =>
+            teepee({
+              url: 'PUT http://localhost/',
+              body() {
+                return Buffer.from('hello');
+              }
+            }),
+          'not to error'
+        );
       });
 
       describe('when a stream is returned', () => {
@@ -978,17 +995,21 @@ describe('Teepee', () => {
             }
           });
 
-          return expect(() => teepee({
-            url: 'PUT http://localhost/',
-            headers: {
-              'Content-Type': 'text/plain; charset=UTF-8'
-            },
-            body() {
-              return fs.createReadStream(
-                pathModule.resolve(__dirname, '..', 'LICENSE')
-              );
-            }
-          }), 'not to error');
+          return expect(
+            () =>
+              teepee({
+                url: 'PUT http://localhost/',
+                headers: {
+                  'Content-Type': 'text/plain; charset=UTF-8'
+                },
+                body() {
+                  return fs.createReadStream(
+                    pathModule.resolve(__dirname, '..', 'LICENSE')
+                  );
+                }
+              }),
+            'not to error'
+          );
         });
 
         it('should support retrying', () => {
@@ -1065,25 +1086,27 @@ describe('Teepee', () => {
 
   describe('with a request timeout', () => {
     describe('passed to the request method', () => {
-      it('should abort the request and emit an error if no response has been received before the timeout', () => expect(cb => {
-        new Teepee('http://www.gofish.dk/')
-          .request({ timeout: 1 })
-          .on('error', err => {
-            expect(err, 'to equal', new SocketError.ETIMEDOUT());
-            cb();
-          });
-      }, 'to call the callback without error'));
+      it('should abort the request and emit an error if no response has been received before the timeout', () =>
+        expect(cb => {
+          new Teepee('http://www.gofish.dk/')
+            .request({ timeout: 1 })
+            .on('error', err => {
+              expect(err, 'to equal', new SocketError.ETIMEDOUT());
+              cb();
+            });
+        }, 'to call the callback without error'));
     });
 
     describe('passed to the constructor method', () => {
-      it('should abort the request and emit an error if no response has been received before the timeout', () => expect(cb => {
-        new Teepee({ url: 'http://www.gofish.dk/', timeout: 1 })
-          .request()
-          .on('error', err => {
-            expect(err, 'to equal', new SocketError.ETIMEDOUT());
-            cb();
-          });
-      }, 'to call the callback without error'));
+      it('should abort the request and emit an error if no response has been received before the timeout', () =>
+        expect(cb => {
+          new Teepee({ url: 'http://www.gofish.dk/', timeout: 1 })
+            .request()
+            .on('error', err => {
+              expect(err, 'to equal', new SocketError.ETIMEDOUT());
+              cb();
+            });
+        }, 'to call the callback without error'));
     });
   });
 
@@ -1188,7 +1211,9 @@ describe('Teepee', () => {
         .spy()
         .named('successfulRequestListener');
       const failedRequestListener = sinon.spy().named('failedRequestListener');
-      const retriedRequestListener = sinon.spy().named('retriedRequestListener');
+      const retriedRequestListener = sinon
+        .spy()
+        .named('retriedRequestListener');
       teepee
         .on('failedRequest', failedRequestListener)
         .on('successfulRequest', successfulRequestListener)
@@ -1278,11 +1303,15 @@ describe('Teepee', () => {
             { response: 200 }
           ]);
 
-          return expect(() => new Teepee({
-            url: 'http://localhost:5984/',
-            retryDelayMilliseconds: 3,
-            numRetries: 1
-          }).request(), 'not to error').then(() => {
+          return expect(
+            () =>
+              new Teepee({
+                url: 'http://localhost:5984/',
+                retryDelayMilliseconds: 3,
+                numRetries: 1
+              }).request(),
+            'not to error'
+          ).then(() => {
             expect(sandbox, 'to have a call satisfying', () => {
               setTimeout(expect.it('to be a function'), 3);
             });
@@ -1297,11 +1326,15 @@ describe('Teepee', () => {
             { response: 200 }
           ]);
 
-          return expect(cb => new Teepee('http://localhost:5984/').request({
-            path: 'foo',
-            numRetries: 1,
-            retryDelayMilliseconds: 3
-          }), 'not to error').then(() => {
+          return expect(
+            cb =>
+              new Teepee('http://localhost:5984/').request({
+                path: 'foo',
+                numRetries: 1,
+                retryDelayMilliseconds: 3
+              }),
+            'not to error'
+          ).then(() => {
             expect(
               setTimeout,
               'was called with',
@@ -1434,10 +1467,17 @@ describe('Teepee', () => {
                 { numRetries: 1, retry: 'selfRedirect' },
                 cb
               );
-            }, 'to call the callback without error').spread((response, body) => {
-              expect(body, 'to equal', Buffer.from('there'));
-              expect(response, 'to have property', 'body', Buffer.from('there'));
-            });
+            }, 'to call the callback without error').spread(
+              (response, body) => {
+                expect(body, 'to equal', Buffer.from('there'));
+                expect(
+                  response,
+                  'to have property',
+                  'body',
+                  Buffer.from('there')
+                );
+              }
+            );
           });
 
           it('should emit a retry event with a SelfRedirectError', () => {
@@ -1459,27 +1499,23 @@ describe('Teepee', () => {
               teepee.on('retriedRequest', retriedRequestListener);
               teepee.request({ numRetries: 1, retry: 'selfRedirect' }, cb);
             }, 'to call the callback without error').then(() => {
-              expect(
-                retriedRequestListener,
-                'to have calls satisfying',
-                () => {
-                  retriedRequestListener({
-                    url: 'http://localhost:5984/',
-                    requestOptions: {
-                      // ...
-                      host: 'localhost',
-                      port: 5984,
-                      method: 'GET'
-                    },
-                    err: {
-                      name: 'SelfRedirect',
-                      data: {
-                        location: 'http://localhost:5984/#foo'
-                      }
+              expect(retriedRequestListener, 'to have calls satisfying', () => {
+                retriedRequestListener({
+                  url: 'http://localhost:5984/',
+                  requestOptions: {
+                    // ...
+                    host: 'localhost',
+                    port: 5984,
+                    method: 'GET'
+                  },
+                  err: {
+                    name: 'SelfRedirect',
+                    data: {
+                      location: 'http://localhost:5984/#foo'
                     }
-                  });
-                }
-              );
+                  }
+                });
+              });
             });
           });
 
@@ -1654,7 +1690,9 @@ describe('Teepee', () => {
 
       return expect(cb => {
         new Teepee('http://localhost:5984/').request('foo', cb);
-      }, 'to call the callback without error').spread((response, body) => expect(body, 'to equal', responseObject));
+      }, 'to call the callback without error').spread((response, body) =>
+        expect(body, 'to equal', responseObject)
+      );
     });
 
     it('should not attempt to parse an application/json response body when the request method is HEAD', () => {
@@ -2070,12 +2108,10 @@ describe('Teepee', () => {
           }, timeoutLimit);
 
           // make more parallel teepee requests than we set maxSockets
-          expect.promise
-            .settle([makeRequest(), makeRequest()])
-            .then(() => {
-              clearTimeout(timeout);
-              resolve();
-            });
+          expect.promise.settle([makeRequest(), makeRequest()]).then(() => {
+            clearTimeout(timeout);
+            resolve();
+          });
         })
         .then(cleanUp);
     });
@@ -2155,11 +2191,15 @@ describe('Teepee', () => {
         response: 200
       });
 
-      return expect(cb => new Teepee({
-        username: 'foobar',
-        password: 'quux',
-        url: 'https://localhost:4232/'
-      }).request(cb), 'to call the callback without error');
+      return expect(
+        cb =>
+          new Teepee({
+            username: 'foobar',
+            password: 'quux',
+            url: 'https://localhost:4232/'
+          }).request(cb),
+        'to call the callback without error'
+      );
     });
   });
 
@@ -2175,10 +2215,14 @@ describe('Teepee', () => {
         response: 200
       });
 
-      return expect(cb => new Teepee('https://localhost:4232/').request(
-        { username: 'foobar', password: 'quux' },
-        cb
-      ), 'to call the callback without error');
+      return expect(
+        cb =>
+          new Teepee('https://localhost:4232/').request(
+            { username: 'foobar', password: 'quux' },
+            cb
+          ),
+        'to call the callback without error'
+      );
     });
   });
 
@@ -2294,85 +2338,99 @@ describe('Teepee', () => {
     });
   });
 
-  expect.addAssertion('<array> to result in request <string|object>', (expect, subject, value) => {
-    httpception({
-      request: value,
-      response: 200
-    });
+  expect.addAssertion(
+    '<array> to result in request <string|object>',
+    (expect, subject, value) => {
+      httpception({
+        request: value,
+        response: 200
+      });
 
-    return expect(cb => new Teepee(subject[0]).request(subject[1], cb), 'to call the callback without error');
-  });
+      return expect(
+        cb => new Teepee(subject[0]).request(subject[1], cb),
+        'to call the callback without error'
+      );
+    }
+  );
 
   describe('url resolution', () => {
     describe('when the base url has a trailing slash', () => {
-      it('should resolve a request url without a leading slash', () => expect(
-        ['http://localhost/foo/', 'bar'],
-        'to result in request',
-        'http://localhost/foo/bar'
-      ));
+      it('should resolve a request url without a leading slash', () =>
+        expect(
+          ['http://localhost/foo/', 'bar'],
+          'to result in request',
+          'http://localhost/foo/bar'
+        ));
 
-      it('should resolve a request url with a leading slash', () => expect(
-        ['http://localhost/foo/', '/bar'],
-        'to result in request',
-        'http://localhost/foo/bar'
-      ));
+      it('should resolve a request url with a leading slash', () =>
+        expect(
+          ['http://localhost/foo/', '/bar'],
+          'to result in request',
+          'http://localhost/foo/bar'
+        ));
     });
 
     describe('when the base url has no trailing slash', () => {
-      it('should resolve a request url without a leading slash', () => expect(
-        ['http://localhost/foo', 'bar'],
-        'to result in request',
-        'http://localhost/foo/bar'
-      ));
+      it('should resolve a request url without a leading slash', () =>
+        expect(
+          ['http://localhost/foo', 'bar'],
+          'to result in request',
+          'http://localhost/foo/bar'
+        ));
 
-      it('should resolve a request url with a leading slash', () => expect(
-        ['http://localhost/foo', '/bar'],
-        'to result in request',
-        'http://localhost/foo/bar'
-      ));
+      it('should resolve a request url with a leading slash', () =>
+        expect(
+          ['http://localhost/foo', '/bar'],
+          'to result in request',
+          'http://localhost/foo/bar'
+        ));
     });
 
     describe('with a protocol-relative request url', () => {
-      it('should keep the protocol from the base url, but take everything else from the request url', () => expect(
-        ['https://localhost/foo', '//example.com/baz'],
-        'to result in request',
-        'https://example.com/baz'
-      ));
+      it('should keep the protocol from the base url, but take everything else from the request url', () =>
+        expect(
+          ['https://localhost/foo', '//example.com/baz'],
+          'to result in request',
+          'https://example.com/baz'
+        ));
 
-      it('should not use basic auth credentials from the base url', () => expect(
-        ['https://foo@bar:localhost/foo', '//example.com/baz'],
-        'to result in request',
-        {
-          headers: {
-            Authorization: undefined
+      it('should not use basic auth credentials from the base url', () =>
+        expect(
+          ['https://foo@bar:localhost/foo', '//example.com/baz'],
+          'to result in request',
+          {
+            headers: {
+              Authorization: undefined
+            }
           }
-        }
-      ));
+        ));
     });
 
     describe('with an absolute request url', () => {
-      it('should ignore the base url', () => expect(
-        ['https://foo@bar:localhost/foo', 'http://example.com/baz'],
-        'to result in request',
-        {
-          url: 'http://example.com/baz',
-          headers: {
-            Authorization: undefined
+      it('should ignore the base url', () =>
+        expect(
+          ['https://foo@bar:localhost/foo', 'http://example.com/baz'],
+          'to result in request',
+          {
+            url: 'http://example.com/baz',
+            headers: {
+              Authorization: undefined
+            }
           }
-        }
-      ));
+        ));
     });
 
     describe('without a base url', () => {
-      it('should not accept a non-absolute request url', () => expect(
-        () => {
-          new Teepee().request('foo');
-        },
-        'to error',
-        new Error(
-          'An absolute request url must be given when no base url is available'
-        )
-      ));
+      it('should not accept a non-absolute request url', () =>
+        expect(
+          () => {
+            new Teepee().request('foo');
+          },
+          'to error',
+          new Error(
+            'An absolute request url must be given when no base url is available'
+          )
+        ));
     });
 
     it('#request should accept a url option as an alias for path', () => {
@@ -2555,11 +2613,12 @@ describe('Teepee', () => {
     }, 'to call the callback without error');
   });
 
-  it('should map DNS errors to DnsError instances', () => expect(
-    teepee('http://qwcoviejqocejqkwoiecjkqwoiejckqowiejckqoiwejckqowec.com/'),
-    'when rejected to be a',
-    DnsError
-  ));
+  it('should map DNS errors to DnsError instances', () =>
+    expect(
+      teepee('http://qwcoviejqocejqkwoiecjkqwoiejckqowiejckqoiwejckqowec.com/'),
+      'when rejected to be a',
+      DnsError
+    ));
 
   it('should allow calling .then() more than once', () => {
     httpception({ require: 'http://foo.com/' });
@@ -2571,13 +2630,14 @@ describe('Teepee', () => {
     }, 'not to throw');
   });
 
-  it('should map socket errors to SocketError instances', () => expect(
-    teepee({ url: 'http://gofish.dk/', timeout: 1 }),
-    'when rejected',
-    expect
-      .it('to be a', SocketError.ETIMEDOUT)
-      .and('to be a', SocketError.SocketError)
-  ));
+  it('should map socket errors to SocketError instances', () =>
+    expect(
+      teepee({ url: 'http://gofish.dk/', timeout: 1 }),
+      'when rejected',
+      expect
+        .it('to be a', SocketError.ETIMEDOUT)
+        .and('to be a', SocketError.SocketError)
+    ));
 
   it('should accept a password-less url', () => {
     httpception({

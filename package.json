@@ -9,7 +9,7 @@
   "scripts": {
     "lint": "eslint .",
     "test": "mocha",
-    "ci": "npm test && npm run coverage && npm run lint && (<coverage/lcov.info coveralls || true)",
+    "ci": "npm test && npm run coverage && npm run lint",
     "coverage": "NODE_ENV=development istanbul cover _mocha -- --reporter dot && echo google-chrome coverage/lcov-report/index.html"
   },
   "dependencies": {

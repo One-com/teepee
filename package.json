@@ -7,7 +7,7 @@
   "license": "BSD-3-Clause",
   "repository": "git://github.com/One-com/teepee",
   "scripts": {
-    "lint": "eslint .",
+    "lint": "eslint . && prettier --check '**/*.js'",
     "test": "mocha",
     "ci": "npm test && npm run coverage && npm run lint",
     "coverage": "NODE_ENV=development istanbul cover _mocha -- --reporter dot && echo google-chrome coverage/lcov-report/index.html"

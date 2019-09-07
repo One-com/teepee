@@ -219,14 +219,14 @@ describe('Teepee', () => {
   it('should provide the response body as response.body and as the second parameter to the callback', () => {
     httpception({
       request: 'GET http://localhost:1234/foobar',
-      response: { statusCode: 200, body: new Buffer('foo') }
+      response: { statusCode: 200, body: Buffer.from('foo') }
     });
 
     return expect(cb => {
       new Teepee('localhost:1234').request('foobar', cb);
     }, 'to call the callback without error').spread((response, body) => {
-      expect(response, 'to have property', 'body', new Buffer('foo'));
-      expect(body, 'to equal', new Buffer('foo'));
+      expect(response, 'to have property', 'body', Buffer.from('foo'));
+      expect(body, 'to equal', Buffer.from('foo'));
     });
   });
 
@@ -239,8 +239,8 @@ describe('Teepee', () => {
     return expect(cb => {
       new Teepee('localhost:1234').request('foobar', cb);
     }, 'to call the callback without error').spread((response, body) => {
-      expect(response, 'to have property', 'body', new Buffer([]));
-      expect(body, 'to equal', new Buffer([]));
+      expect(response, 'to have property', 'body', Buffer.from([]));
+      expect(body, 'to equal', Buffer.from([]));
     });
   });
 
@@ -733,14 +733,14 @@ describe('Teepee', () => {
         headers: {
           'Content-Type': undefined
         },
-        body: new Buffer([1, 2, 3])
+        body: Buffer.from([1, 2, 3])
       },
       response: 200
     });
 
     return expect(cb => {
       new Teepee('http://localhost:5984/').request(
-        { method: 'POST', path: 'foo', body: new Buffer([1, 2, 3]) },
+        { method: 'POST', path: 'foo', body: Buffer.from([1, 2, 3]) },
         cb
       );
     }, 'to call the callback without error');
@@ -753,7 +753,7 @@ describe('Teepee', () => {
         headers: {
           'Content-Type': undefined
         },
-        body: new Buffer('foobar', 'utf-8')
+        body: Buffer.from('foobar', 'utf-8')
       },
       response: 200
     });
@@ -836,7 +836,7 @@ describe('Teepee', () => {
     return expect(cb => {
       teepee('http://localhost/')
         .on('responseBody', response => {
-          expect(response.body, 'to equal', new Buffer('yaddayaddayadda'));
+          expect(response.body, 'to equal', Buffer.from('yaddayaddayadda'));
           cb();
         })
         .on('error', cb);
@@ -902,7 +902,7 @@ describe('Teepee', () => {
         eventEmitter.on('error', function(err) {
           expect(err, 'to equal', new Teepee.httpErrors.NotFound());
           this.on('responseBody', response => {
-            expect(response.body, 'to equal', new Buffer('yaddayaddayadda'));
+            expect(response.body, 'to equal', Buffer.from('yaddayaddayadda'));
             cb();
           });
         });
@@ -957,14 +957,14 @@ describe('Teepee', () => {
         httpception({
           request: {
             url: 'PUT http://localhost/',
-            body: new Buffer('hello')
+            body: Buffer.from('hello')
           }
         });
 
         return expect(() => teepee({
           url: 'PUT http://localhost/',
           body() {
-            return new Buffer('hello');
+            return Buffer.from('hello');
           }
         }), 'not to error');
       });
@@ -1109,14 +1109,14 @@ describe('Teepee', () => {
           response: {
             statusCode: 504,
             headers: { Foo: 'bar' },
-            body: new Buffer('foo')
+            body: Buffer.from('foo')
           }
         },
         {
           response: {
             statusCode: 200,
             headers: { Foo: 'quux' },
-            body: new Buffer('quux')
+            body: Buffer.from('quux')
           }
         }
       ]);
@@ -1127,9 +1127,9 @@ describe('Teepee', () => {
           cb
         );
       }, 'to call the callback without error').spread((response, body) => {
-        expect(response.body, 'to equal', new Buffer('quux'));
+        expect(response.body, 'to equal', Buffer.from('quux'));
         expect(response.headers.foo, 'to equal', 'quux');
-        expect(body, 'to equal', new Buffer('quux'));
+        expect(body, 'to equal', Buffer.from('quux'));
       });
     });
 
@@ -1168,7 +1168,7 @@ describe('Teepee', () => {
         teepee({ url, numRetries: 1, timeout: 20 }, cb);
       }, 'to call the callback without error')
         .spread((response, body) => {
-          expect(body, 'to equal', new Buffer('FooBar'));
+          expect(body, 'to equal', Buffer.from('FooBar'));
           expect(requestHandler, 'was called twice');
         })
         .finally(() => {
@@ -1417,14 +1417,14 @@ describe('Teepee', () => {
                 response: {
                   statusCode: 301,
                   headers: { Location: 'http://localhost:5984/' },
-                  body: new Buffer('hey')
+                  body: Buffer.from('hey')
                 }
               },
               {
                 response: {
                   statusCode: 200,
                   headers: { Foo: 'quux' },
-                  body: new Buffer('there')
+                  body: Buffer.from('there')
                 }
               }
             ]);
@@ -1435,8 +1435,8 @@ describe('Teepee', () => {
                 cb
               );
             }, 'to call the callback without error').spread((response, body) => {
-              expect(body, 'to equal', new Buffer('there'));
-              expect(response, 'to have property', 'body', new Buffer('there'));
+              expect(body, 'to equal', Buffer.from('there'));
+              expect(response, 'to have property', 'body', Buffer.from('there'));
             });
           });
 
@@ -1607,7 +1607,7 @@ describe('Teepee', () => {
     it('should handle simple response stream', () => {
       const responseStream = new stream.Readable();
       responseStream._read = () => {
-        responseStream.push(new Buffer(JSON.stringify({ a: 1, b: 2 })));
+        responseStream.push(Buffer.from(JSON.stringify({ a: 1, b: 2 })));
         responseStream.push(null);
       };
 
@@ -1635,7 +1635,7 @@ describe('Teepee', () => {
       };
       const responseStream = new stream.Readable();
       responseStream._read = () => {
-        responseStream.push(new Buffer(JSON.stringify(responseObject)));
+        responseStream.push(Buffer.from(JSON.stringify(responseObject)));
         responseStream.push(null);
       };
 
@@ -1685,7 +1685,7 @@ describe('Teepee', () => {
 
       return teepee({ url: 'http://localhost:5984/', json: false }).then(
         response => {
-          expect(response.body, 'to equal', new Buffer('{"foo":123}'));
+          expect(response.body, 'to equal', Buffer.from('{"foo":123}'));
         }
       );
     });
@@ -1693,7 +1693,7 @@ describe('Teepee', () => {
     it('should throw an error on invalid JSON', () => {
       const responseStream = new stream.Readable();
       responseStream._read = () => {
-        responseStream.push(new Buffer('{]'));
+        responseStream.push(Buffer.from('{]'));
         responseStream.push(null);
       };
 
@@ -1917,10 +1917,10 @@ describe('Teepee', () => {
   });
 
   describe('with a client certificate and related properties', () => {
-    const zero = new Buffer([0]);
-    const one = new Buffer([1]);
-    const two = new Buffer([2]);
-    const three = new Buffer([3]);
+    const zero = Buffer.from([0]);
+    const one = Buffer.from([1]);
+    const two = Buffer.from([2]);
+    const three = Buffer.from([3]);
 
     describe('specified as Buffer instances', () => {
       const teepee = new Teepee({
@@ -2085,7 +2085,7 @@ describe('Teepee', () => {
         request: 'GET /',
         response: {
           statusCode: 304,
-          body: new Buffer([0, 1, 2])
+          body: Buffer.from([0, 1, 2])
         }
       });
 
@@ -2534,12 +2534,12 @@ describe('Teepee', () => {
     httpception([
       {
         request: 'GET http://example.com/',
-        response: { body: new Buffer('abcdef') }
+        response: { body: Buffer.from('abcdef') }
       },
       {
         request: {
           url: 'PUT http://somewhereelse.com/',
-          body: new Buffer('abcdef')
+          body: Buffer.from('abcdef')
         },
         response: 200
       }
@@ -2610,7 +2610,7 @@ describe('Teepee', () => {
           'Content-Encoding': 'gzip'
         },
         // zlib.gzipSync('foobarquux') (not supported with node.js 0.10)
-        unchunkedBody: new Buffer([
+        unchunkedBody: Buffer.from([
           0x1f,
           0x8b,
           0x08,
@@ -2646,7 +2646,7 @@ describe('Teepee', () => {
     });
 
     return teepee('http://example.com/').then(response => {
-      expect(response.body, 'to equal', new Buffer('foobarquux', 'utf-8'));
+      expect(response.body, 'to equal', Buffer.from('foobarquux', 'utf-8'));
     });
   });
 
@@ -2659,7 +2659,7 @@ describe('Teepee', () => {
           'Content-Encoding': 'deflate'
         },
         // zlib.deflateSync('foobarquux') (not supported with node.js 0.10)
-        unchunkedBody: new Buffer([
+        unchunkedBody: Buffer.from([
           0x78,
           0x9c,
           0x4b,
@@ -2683,7 +2683,7 @@ describe('Teepee', () => {
     });
 
     return teepee('http://example.com/').then(response => {
-      expect(response.body, 'to equal', new Buffer('foobarquux', 'utf-8'));
+      expect(response.body, 'to equal', Buffer.from('foobarquux', 'utf-8'));
     });
   });
 

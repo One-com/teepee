@@ -1194,7 +1194,7 @@ describe('Teepee', () => {
       const url = `http://${serverHostname}:${serverAddress.port}/`;
 
       return expect(cb => {
-        teepee({ url, numRetries: 1, timeout: 20 }, cb);
+        teepee({ url, numRetries: 1, timeout: 200 }, cb);
       }, 'to call the callback without error')
         .spread((response, body) => {
           expect(body, 'to equal', Buffer.from('FooBar'));

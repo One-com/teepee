@@ -8,8 +8,8 @@
   "repository": "git://github.com/One-com/teepee",
   "scripts": {
     "lint": "eslint .",
-    "test": "mocha && npm run lint",
-    "ci": "npm test && npm run coverage && (<coverage/lcov.info coveralls || true)",
+    "test": "mocha",
+    "ci": "npm test && npm run coverage && npm run lint && (<coverage/lcov.info coveralls || true)",
     "coverage": "NODE_ENV=development istanbul cover _mocha -- --reporter dot && echo google-chrome coverage/lcov-report/index.html"
   },
   "dependencies": {

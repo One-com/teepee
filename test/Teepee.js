@@ -2160,7 +2160,10 @@ describe('Teepee', () => {
 
       function makeRequest() {
         return expect.promise(run => {
-          teepee.request('foo').on('error', run(() => {}));
+          teepee.request('foo').on(
+            'error',
+            run(() => {})
+          );
         });
       }
 

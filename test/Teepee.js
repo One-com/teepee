@@ -2498,6 +2498,30 @@ describe('Teepee', () => {
       expect(subsidiary.numRetries, 'to equal', 99);
     });
 
+    it('should not throw unhandled error when emitting error event from subsidiary object', () => {
+      const teepee = new Teepee();
+      const subsidiary = teepee.subsidiary();
+      const cb = sinon.spy();
+      subsidiary.on('error', cb);
+      subsidiary.emit('error');
+
+      expect(cb.calledOnce, 'to be true');
+    });
+
+    it('should emit error event to base client when subsidiary instance emits an error event and subsidiary has no error handler', () => {
+      const teepee = new Teepee();
+      const subsidiary = teepee.subsidiary();
+      const parentCb = sinon.spy();
+      teepee.on('error', parentCb);
+      sinon.spy(teepee);
+      subsidiary.emit('error');
+      sinon.spy(subsidiary);
+
+      expect(teepee.emit.calledOnce, 'to be true');
+      expect(subsidiary.emit.called, 'to be false');
+      expect(parentCb.calledOnce, 'to be true');
+    });
+
     it('should produce an instance that echoes events to the parent', () => {
       httpception([{ response: 200 }, { response: 200 }]);
 
